@@ -129,6 +129,7 @@ export class MapComponent {
         id: "malaysia-labels-detailed",
         type: "symbol",
         source: "malaysia-detailed",
+        minzoom: 7,
         layout: {
           "text-field": ["get", "name"],
           "text-size": 11,
@@ -192,31 +193,6 @@ export class MapComponent {
         features: [],
       },
     });
-
-    this.map.addLayer(
-  {
-    id: "warnings-label",
-    type: "symbol",
-    source: "warnings-source",
-    layout: {
-      "text-field": [
-        "format",
-        ["get", "id"], {}, "\n", {},
-        ["get", "name"], { "font-scale": 0.9 }
-      ],
-      "text-size": 12,
-      "text-anchor": "center",
-      "text-allow-overlap": false,
-    },
-    paint: {
-      "text-color": "#ffffff",
-      "text-halo-color": "#000000",
-      "text-halo-width": 1.5,
-    },
-  },
-  "malaysia-outline"
-);
-
     // Fill layer
     this.map.addLayer(
       {

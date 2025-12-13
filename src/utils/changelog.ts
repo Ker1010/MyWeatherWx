@@ -10,6 +10,7 @@ export const changelogData: ChangelogEntry[] = [
     date: '2025-12-12',
     changes: [
         'Added Change log',
+        'Added Map Label',
         'More area coverage',
         'Change location Decode logic',
     ]
