@@ -157,6 +157,9 @@ export class MapComponent {
       // Initialize the shared source and layers for warnings
       this.initializeWarningLayers();
 
+      // Force resize to ensure map dimensions are synced with container (fixes mobile initial load)
+      this.map.resize();
+
       callback();
     });
   }
