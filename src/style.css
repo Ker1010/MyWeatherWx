@@ -1,0 +1,507 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Warning Filter Component */
+.glass-panel {
+  background: rgba(30, 30, 35, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+.warning-filter {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 280px;
+  max-height: 90vh; /* Prevent overflow on small screens */
+  overflow-y: auto;
+  z-index: 1000;
+  padding: 16px;
+  color: #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.warning-filter.collapsed {
+  width: auto;
+  height: auto;
+  overflow: hidden;
+  padding: 10px;
+}
+
+.warning-filter.collapsed .filter-content {
+  display: none;
+}
+
+.warning-filter.collapsed .filter-header h3 {
+  display: none;
+}
+
+.warning-filter.collapsed .filter-header {
+  margin-bottom: 0;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.filter-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.filter-section {
+  margin-bottom: 16px;
+}
+
+.filter-section:last-child {
+  margin-bottom: 0;
+}
+
+.filter-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #888;
+  font-weight: 600;
+}
+
+/* Checkbox Styling */
+.checkbox-container {
+  display: block;
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.checkbox-container:hover {
+  color: #fff;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  height: 18px;
+  width: 18px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: #2196f3;
+  border-color: #2196f3;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-container .checkmark:after {
+  left: 6px;
+  top: 2px;
+  width: 4px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+/* Scrollbar for container */
+.warning-filter::-webkit-scrollbar {
+  width: 6px;
+}
+
+.warning-filter::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.warning-filter::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.warning-filter::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.warning-popup {
+  max-width: 35% !important;
+}
+
+.maplibregl-popup-content {
+  border-radius: 10px;
+}
+
+/* Raw Warning Viewer */
+.raw-warning-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px);
+}
+
+.raw-warning-content {
+  width: 80%;
+  max-width: 900px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.raw-warning-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+}
+
+.raw-warning-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.raw-warning-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.raw-warning-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.raw-warning-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.raw-warning-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.warning-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.warning-header {
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.warning-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.warning-time {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.warning-body {
+  padding: 16px;
+}
+
+.warning-body p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #ccc;
+}
+
+.warning-body .instruction {
+  color: #888;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.warning-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ddd;
+}
+
+.locations {
+  font-size: 12px;
+  color: #888;
+}
+
+/* About/Info Panel Styles */
+.about-panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 280px;
+  padding: 20px;
+  z-index: 1000;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  /* Glass panel styles are inherited from .glass-panel */
+}
+
+/* About Header */
+.about-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Changed to space-between for toggle button */
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: padding-bottom 0.3s, border-bottom-color 0.3s;
+}
+
+.about-panel.collapsed .about-header {
+  padding-bottom: 0;
+  border-bottom-color: transparent;
+}
+
+.logo-icon {
+  font-size: 24px;
+  color: #2196f3; /* Accent color */
+  filter: drop-shadow(0 0 8px rgba(33, 150, 243, 0.5));
+}
+
+.about-header h1 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.3s;
+}
+
+.about-panel.collapsed .about-header h1,
+.about-panel.collapsed .about-header .version {
+  /* Keep visible or hide? User just asked to hide/show, usually content is hidden. Header stays. */
+}
+
+.about-header .version {
+  font-size: 11px;
+  color: #888;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#about-toggle i {
+  transition: transform 0.3s;
+}
+
+.about-panel.collapsed #about-toggle i {
+  transform: rotate(180deg);
+}
+
+/* About Content */
+.about-content {
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.3s, max-height 0.3s, margin-top 0.3s;
+  max-height: 500px; /* Arbitrary large height */
+  opacity: 1;
+  overflow: hidden;
+  margin-top: 20px;
+  gap: 20px;
+}
+
+.about-panel.collapsed .about-content {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  pointer-events: none;
+}
+
+.app-desc, .developer {
+  font-size: 13px;
+  color: #ccc;
+  margin: 0;
+  line-height: 1.4;
+  a {
+    color: #fff;
+  }
+}
+
+/* Source Tags */
+.source-section label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #666;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.source-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.source-tag {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #bbb;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s;
+}
+
+.source-tag:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* Disclaimer Box */
+.disclaimer-box {
+  background: rgba(255, 87, 87, 0.1);
+  border: 1px solid rgba(255, 87, 87, 0.3);
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 4px;
+}
+
+.disclaimer-box .warning-icon {
+  color: #ff5757;
+  font-size: 14px;
+  margin-top: 1px;
+}
+
+.disclaimer-box p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #ffdada;
+}
+
+.disclaimer-box strong {
+  color: #ff8a8a;
+}
+

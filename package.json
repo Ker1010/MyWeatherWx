@@ -1,0 +1,19 @@
+{
+  "name": "weather",
+  "private": true,
+  "version": "0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4"
+  },
+  "dependencies": {
+    "@types/turf": "^3.5.32",
+    "maplibre-gl": "^5.14.0"
+  }
+}
