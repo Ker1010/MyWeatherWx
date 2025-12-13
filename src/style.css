@@ -27,6 +27,32 @@ body {
 }
 
 /* Warning Filter Component */
+.location-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  color: #fff;
+  font-size: 20px;
+  transition: all 0.2s;
+}
+
+.location-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+.location-btn:active {
+  transform: scale(0.95);
+}
+
+/* Warning Filter Component */
 .glass-panel {
   background: rgba(30, 30, 35, 0.7);
   backdrop-filter: blur(10px);
@@ -593,6 +619,10 @@ body {
   
   .maplibregl-popup-content {
       padding: 10px 10px 15px;
+  }
+
+  .location-btn {
+      bottom: 100px; /* Above the warning filter */
   }
 }
 

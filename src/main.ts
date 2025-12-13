@@ -34,6 +34,11 @@ if (window.innerWidth <= 768) {
     aboutPanel?.classList.add('collapsed');
 }
 
+const locationBtn = document.getElementById('location-btn');
+locationBtn?.addEventListener('click', () => {
+    mapComponent.showUserLocation();
+});
+
 mapComponent.onLoad(async () => {
     // 1. Load Radar
     const data = await RainViewerService.fetchData();
@@ -42,7 +47,7 @@ mapComponent.onLoad(async () => {
         mapComponent.addRainViewerLayer(latestPast.time);
     }
 
-    mapComponent.showUserLocation();
+    // mapComponent.showUserLocation(); // Removed auto-location
     
     // 2. Load and highlight warnings
     const warningData = await WeatherWarningService.fetchData();
