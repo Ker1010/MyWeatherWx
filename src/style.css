@@ -13,17 +13,26 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  height: 100%;
+}
+
 body {
   margin: 0;
   padding: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%; /* Fallback */
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
   overflow: hidden;
+  position: fixed; /* Prevent bouncy scrolling on iOS */
 }
 
 #map {
   width: 100%;
   height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 /* Warning Filter Component */

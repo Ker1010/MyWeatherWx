@@ -303,7 +303,6 @@ export class MapComponent {
 
   public addRainViewerLayer(timestamp: number) {
     if (this.map.getSource("rainviewer")) return;
-
     this.map.addSource("rainviewer", {
       type: "raster",
       tiles: [
