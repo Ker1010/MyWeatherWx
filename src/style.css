@@ -18,20 +18,12 @@ body {
   padding: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* Dynamic viewport height for mobile */
   overflow: hidden;
-  position: fixed; /* Prevent scroll bounce */
-  top: 0;
-  left: 0;
 }
-
 
 #map {
   width: 100%;
   height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 
 /* Warning Filter Component */
@@ -542,7 +534,7 @@ body {
 /* responsive */
 @media (max-width: 768px) {
   body {
-      height: 100dvh; /* dynamic viewport height */
+    height: 100dvh; /* Use dynamic viewport height to fix scrolling issues on iOS */
   }
 
   /* Adjust About Panel */
