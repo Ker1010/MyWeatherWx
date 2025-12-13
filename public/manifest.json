@@ -1,0 +1,17 @@
+{
+    "name": "MyWeatherWX",
+    "short_name": "MyWeatherWX",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#242424",
+    "theme_color": "#242424",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/MyWeatherWx.png",
+            "sizes": "192x192 512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
