@@ -432,16 +432,12 @@ body {
   transition: opacity 0.3s;
 }
 
-.about-panel.collapsed .about-header h1,
-.about-panel.collapsed .about-header .version {
-  /* Keep visible or hide? User just asked to hide/show, usually content is hidden. Header stays. */
-}
+
 
 .about-header .version {
   font-size: 11px;
   color: #888;
   font-weight: 500;
-  text-transform: uppercase;
   letter-spacing: 1px;
 }
 
@@ -636,5 +632,121 @@ body {
   .location-btn {
       bottom: 100px; /* Above the warning filter */
   }
+}
+
+/* Version Link */
+#app-version {
+  cursor: pointer;
+  transition: color 0.2s;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+
+#app-version:hover {
+  color: #fff;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+.modal-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+  display: none;
+}
+
+/* Modal Content */
+.modal-content {
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  transform: translateY(0);
+  transition: transform 0.3s;
+}
+
+.modal-overlay.hidden .modal-content {
+  transform: translateY(20px);
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Changelog Items */
+.changelog-entry {
+  margin-bottom: 24px;
+}
+
+.changelog-entry:last-child {
+  margin-bottom: 0;
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.entry-version {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.entry-date {
+  font-size: 12px;
+  color: #888;
+}
+
+.entry-list {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.entry-list li {
+  font-size: 14px;
+  color: #ccc;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.entry-list li::marker {
+  color: #2196f3;
 }
 

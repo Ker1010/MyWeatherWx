@@ -5,6 +5,8 @@ import { RawWarningViewer } from './components/RawWarningViewer';
 import { RainViewerService } from './services/RainViewerService';
 import { WeatherWarningService, WeatherWarningDecoder } from './services/WeatherWarning';
 
+import { changelogData } from './utils/changelog';
+
 const mapComponent = new MapComponent('map');
 const rawWarningViewer = new RawWarningViewer();
 
@@ -33,6 +35,42 @@ aboutToggle?.addEventListener('click', () => {
 if (window.innerWidth <= 768) {
     aboutPanel?.classList.add('collapsed');
 }
+
+// Changelog Modal Logic
+const appVersion = document.getElementById('app-version');
+const changelogModal = document.getElementById('changelog-modal');
+const closeChangelog = document.getElementById('close-changelog');
+const changelogList = document.getElementById('changelog-list');
+
+function renderChangelog() {
+    if (!changelogList) return;
+    changelogList.innerHTML = changelogData.map(entry => `
+        <div class="changelog-entry">
+            <div class="entry-header">
+                <span class="entry-version">${entry.version}</span>
+                <span class="entry-date">${entry.date}</span>
+            </div>
+            <ul class="entry-list">
+                ${entry.changes.map(change => `<li>${change}</li>`).join('')}
+            </ul>
+        </div>
+    `).join('');
+}
+
+appVersion?.addEventListener('click', () => {
+    renderChangelog();
+    changelogModal?.classList.remove('hidden');
+});
+
+closeChangelog?.addEventListener('click', () => {
+    changelogModal?.classList.add('hidden');
+});
+
+changelogModal?.addEventListener('click', (e) => {
+    if (e.target === changelogModal) {
+        changelogModal.classList.add('hidden');
+    }
+});
 
 const locationBtn = document.getElementById('location-btn');
 locationBtn?.addEventListener('click', () => {

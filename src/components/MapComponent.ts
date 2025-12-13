@@ -26,6 +26,7 @@ export class MapComponent {
 
   private static REGION_MAPPING: Record<string, string[]> = {
     "east-johor": ["kota-tinggi", "mersing", "segamat", "kluang"],
+    "johor": ["kota-bharu", "kota-tinggi", "mersing", "segamat", "kluang", "johor-bahru", "muar", "kulai", "tangkak", "batu-pahat", "pontian"],
     pahang: [
       "kuantan",
       "pekan",
@@ -124,6 +125,23 @@ export class MapComponent {
           "line-opacity": 0.5,
         },
       },
+      {
+        id: "malaysia-labels-detailed",
+        type: "symbol",
+        source: "malaysia-detailed",
+        layout: {
+          "text-field": ["get", "name"],
+          "text-size": 11,
+          "text-anchor": "center",
+          "text-allow-overlap": false,
+          "text-optional": true,
+        },
+        paint: {
+          "text-color": "#a9b4bc",
+          "text-halo-color": "#1f2025",
+          "text-halo-width": 1.5,
+        },
+      },
     ],
   };
 
@@ -174,6 +192,30 @@ export class MapComponent {
         features: [],
       },
     });
+
+    this.map.addLayer(
+  {
+    id: "warnings-label",
+    type: "symbol",
+    source: "warnings-source",
+    layout: {
+      "text-field": [
+        "format",
+        ["get", "id"], {}, "\n", {},
+        ["get", "name"], { "font-scale": 0.9 }
+      ],
+      "text-size": 12,
+      "text-anchor": "center",
+      "text-allow-overlap": false,
+    },
+    paint: {
+      "text-color": "#ffffff",
+      "text-halo-color": "#000000",
+      "text-halo-width": 1.5,
+    },
+  },
+  "malaysia-outline"
+);
 
     // Fill layer
     this.map.addLayer(

@@ -32,7 +32,7 @@
         <i class="bi bi-cloud-lightning-rain-fill logo-icon"></i>
         <div>
           <h1>MyWeatherWX</h1>
-          <span class="version">v0.1 Beta</span>
+          <span class="version" id="app-version">v0.2 Beta</span>
         </div>
       </div>
       <button class="icon-btn" id="about-toggle">
@@ -58,6 +58,21 @@
           inaccurate or delayed. Do not use for safety-critical purposes.</p>
       </div>
       <p class="developer">Developed by <a href="https://www.kerserver.org">Ker</a>.</p>
+    </div>
+  </div>
+
+  <!-- Changelog Modal -->
+  <div id="changelog-modal" class="modal-overlay hidden">
+    <div class="glass-panel modal-content">
+      <div class="modal-header">
+        <h2>Changelog</h2>
+        <button id="close-changelog" class="icon-btn">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body" id="changelog-list">
+        <!-- Changelog items will be injected here -->
+      </div>
     </div>
   </div>
 
