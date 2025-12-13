@@ -440,9 +440,7 @@ export class MapComponent {
           return (
             featureId === location ||
             featureName === location ||
-            featureState === location ||
-            featureId?.includes(location) ||
-            featureName?.includes(location)
+            featureState === location
           );
         });
 
