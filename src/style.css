@@ -16,6 +16,7 @@
 html {
   height: 100%;
   background-color: #242424; /* Fix bottom white overlap */
+  overscroll-behavior: none; /* Prevent bounce showing white bg */
 }
 
 body {
@@ -25,7 +26,7 @@ body {
   height: 100%; /* Fallback */
   height: 100dvh; /* Dynamic viewport height for mobile browsers */
   overflow: hidden;
-  position: fixed; /* Prevent bouncy scrolling on iOS */
+  overscroll-behavior: none; /* Prevent bouncy scrolling */
 }
 
 #map {
@@ -34,6 +35,7 @@ body {
   position: absolute;
   top: 0;
   left: 0;
+  background-color: #1f2025; /* Match map background to prevent white flashes */
 }
 
 /* Warning Filter Component */
