@@ -29,6 +29,11 @@ aboutToggle?.addEventListener('click', () => {
     aboutPanel?.classList.toggle('collapsed');
 });
 
+// Auto-collapse on mobile
+if (window.innerWidth <= 768) {
+    aboutPanel?.classList.add('collapsed');
+}
+
 mapComponent.onLoad(async () => {
     // 1. Load Radar
     const data = await RainViewerService.fetchData();

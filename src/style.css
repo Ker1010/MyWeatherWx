@@ -505,3 +505,94 @@ body {
   color: #ff8a8a;
 }
 
+/* responsive */
+@media (max-width: 768px) {
+  body {
+      height: 100dvh; /* dynamic viewport height */
+  }
+
+  /* Adjust About Panel */
+  .about-panel {
+      width: calc(100% - 40px); /* Full width minus margin */
+      top: 10px;
+      left: 20px;
+      padding: 15px;
+      padding-top: max(15px, env(safe-area-inset-top)); /* account for notch */
+  }
+
+  .about-header h1 {
+      font-size: 16px;
+  }
+
+  /* Move Warning Filter to Bottom */
+  .warning-filter {
+      top: auto;
+      bottom: 30px;
+      left: 20px;
+      right: 20px;
+      width: auto;
+      max-height: 50vh; /* Allow more space */
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      
+      /* Smooth Animation */
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Spring-like ease */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* integrated scroll handling */
+  }
+
+  .warning-filter.collapsed {
+      width: auto;
+      align-items: center;
+      gap: 10px;
+      max-height: 60px; /* Exact height for collapsed state */
+      
+      /* Keep full width for smooth "Drawer" animation */
+      /* right: 20px (inherited) */
+  }
+
+  .warning-filter .filter-header {
+      width: 100%;
+      flex-shrink: 0;
+      /* Ensure header is always clickable/visible */
+      cursor: pointer;
+  }
+
+  .warning-filter.collapsed .filter-header {
+      margin-bottom: 0;
+      display: flex;
+      align-items: center;
+      /* justify-content: space-between; inside header already */
+  }
+
+  .warning-filter.collapsed .filter-header h3 {
+      display: block; 
+      font-size: 14px;
+      margin: 0;
+      white-space: nowrap;
+      opacity: 1; /* Ensure visible */
+  }
+  
+  /* Hide content smoothly */
+  .warning-filter .filter-content {
+      opacity: 1;
+      transition: opacity 0.3s ease;
+      overflow-y: auto; /* Scroll content internal */
+  }
+
+  .warning-filter.collapsed .filter-content {
+      opacity: 0;
+      pointer-events: none;
+      /* Remove display:none to allow smooth max-height transition of parent */
+  }
+
+  /* Make popups more mobile friendly */
+  .warning-popup {
+      max-width: 85% !important;
+  }
+  
+  .maplibregl-popup-content {
+      padding: 10px 10px 15px;
+  }
+}
+

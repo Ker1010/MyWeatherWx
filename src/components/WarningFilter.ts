@@ -37,6 +37,11 @@ export class WarningFilter {
         this.render();
         
         document.body.appendChild(this.container);
+
+        // Auto-collapse on mobile
+        if (window.innerWidth <= 768) {
+            this.container.classList.add('collapsed');
+        }
         
         // Initial trigger
         this.onChange(this.state);
