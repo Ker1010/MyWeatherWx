@@ -3002,7 +3002,7 @@
     },
     {
       "type": "Feature",
-      "id": "melaka",
+      "id": "melaka-tengah",
       "properties": {
         "name": "Melaka Tengah",
         "code_state": 4,
@@ -4617,7 +4617,7 @@
     },
     {
       "type": "Feature",
-      "id": "w.p.-kuala-lumpur",
+      "id": "ft-kuala-lumpur",
       "properties": {
         "name": "W.P. Kuala Lumpur",
         "code_state": 14,

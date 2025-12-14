@@ -64,5 +64,39 @@
         "mukim-chiku",
         "jeli",
         "gua-musang"
+    ],
+    "selangor": [
+        "sabak-bernam",
+        "kuala-selangor",
+        "klang",
+        "kuala-langat",
+        "sepang",
+        "petaling",
+        "hulu-langat",
+        "gombak",
+        "hulu-selangor"
+    ],
+    "n.-sembilan": [
+        "jelebu",
+        "jempol",
+        "seremban",
+        "kuala-pilah",
+        "rembau",
+        "port-dickson",
+        "tampin"
+    ],
+    "negeri-sembilan": [
+        "jelebu",
+        "jempol",
+        "seremban",
+        "kuala-pilah",
+        "rembau",
+        "port-dickson",
+        "tampin"
+    ],
+    "melaka": [
+        "alor-gajah",
+        "jasin",
+        "melaka-tengah"
     ]
 }
