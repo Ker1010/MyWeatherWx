@@ -57,6 +57,10 @@ function renderChangelog() {
     `).join('');
 }
 
+if (appVersion) {
+    appVersion.innerText = `${changelogData[0].version}`;
+}
+
 appVersion?.addEventListener('click', () => {
     renderChangelog();
     changelogModal?.classList.remove('hidden');
@@ -84,8 +88,6 @@ mapComponent.onLoad(async () => {
         const latestPast = data.radar.past[data.radar.past.length - 1];
         mapComponent.addRainViewerLayer(latestPast.time);
     }
-
-    // mapComponent.showUserLocation(); // Removed auto-location
     
     // 2. Load and highlight warnings
     const warningData = await WeatherWarningService.fetchData();

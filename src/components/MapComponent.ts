@@ -24,46 +24,8 @@ export class MapComponent {
     status: new Set(["active"]),
   };
 
-  private static REGION_MAPPING: Record<string, string[]> = {
-    "east-johor": ["kota-tinggi", "mersing", "segamat", "kluang"],
-    "johor": ["kota-bharu", "kota-tinggi", "mersing", "segamat", "kluang", "johor-bahru", "muar", "kulai", "tangkak", "batu-pahat", "pontian"],
-    pahang: [
-      "kuantan",
-      "pekan",
-      "rompin",
-      "bentong",
-      "raub",
-      "lipis",
-      "jerantut",
-      "temerloh",
-      "maran",
-      "bera",
-      "cameron-highlands",
-    ],
-    terengganu: [
-      "besut",
-      "setiu",
-      "kuala-terengganu",
-      "kuala-nerus",
-      "marang",
-      "hulu-terengganu",
-      "dungun",
-      "kemaman",
-    ],
-    kelantan: [
-      "tumpat",
-      "pasir-mas",
-      "kota-bharu",
-      "bachok",
-      "pasir-puteh",
-      "tanah-merah",
-      "machang",
-      "kuala-krai",
-      "mukim-chiku",
-      "jeli",
-      "gua-musang",
-    ],
-  };
+  private static REGION_MAPPING: Record<string, string[]> = {};
+  private static regionMappingLoaded = false;
 
   private static BASE_MAP_STYLE: StyleSpecification = {
     version: 8,
@@ -147,12 +109,15 @@ export class MapComponent {
   };
 
   constructor(containerId: string) {
+    const isMobile =
+      window.matchMedia("(max-width: 768px)").matches ||
+      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     this.containerId = containerId;
     this.map = new maplibregl.Map({
       container: this.containerId,
       style: MapComponent.BASE_MAP_STYLE,
       center: [109.45, 4.11],
-      zoom: 5.5,
+      zoom: isMobile ? 3.5 : 5.5,
       maxZoom: 8,
       attributionControl: false,
     });
@@ -161,24 +126,29 @@ export class MapComponent {
   public onLoad(callback: () => void) {
     this.map.on("load", async () => {
       try {
+        // Load malaysia detail geojson
         const res = await fetch("/malaysia_detail.geojson");
         if (res.ok) {
           const data = await res.json();
           this.geojsonFeatures = data.features || [];
-          console.log(
-            `Loaded ${this.geojsonFeatures.length} features for lookup.`
-          );
+          console.log(`Loaded ${this.geojsonFeatures.length} features`);
+        }
+
+        // Load region mapping if not already loaded
+        if (!MapComponent.regionMappingLoaded) {
+          const mappingRes = await fetch("/region_mapping.json");
+          if (mappingRes.ok) {
+            MapComponent.REGION_MAPPING = await mappingRes.json();
+            MapComponent.regionMappingLoaded = true;
+            console.log("Region mapping loaded");
+          }
         }
       } catch (e) {
-        console.error("Failed to load malaysia_detail.geojson for lookups", e);
+        console.error("Failed to load data", e);
       }
 
-      // Initialize the shared source and layers for warnings
       this.initializeWarningLayers();
-
-      // Force resize to ensure map dimensions are synced with container (fixes mobile initial load)
       this.map.resize();
-
       callback();
     });
   }

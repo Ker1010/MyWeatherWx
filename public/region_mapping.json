@@ -1,0 +1,67 @@
+{
+    "east-johor": [
+        "kota-tinggi", 
+        "mersing", 
+        "segamat", 
+        "kluang"
+    ],
+    "johor": [
+        "kota-bharu",
+        "kota-tinggi",
+        "mersing",
+        "segamat",
+        "kluang",
+        "johor-bahru",
+        "muar",
+        "kulai",
+        "tangkak",
+        "batu-pahat",
+        "pontian"
+    ],
+    "pahang": [
+        "kuantan",
+        "pekan",
+        "rompin",
+        "bentong",
+        "raub",
+        "lipis",
+        "jerantut",
+        "temerloh",
+        "maran",
+        "bera",
+        "cameron-highlands"
+    ],
+    "terengganu": [
+        "besut",
+        "setiu",
+        "kuala-terengganu",
+        "kuala-nerus",
+        "marang",
+        "hulu-terengganu",
+        "dungun",
+        "kemaman"
+    ],
+    "hulu-perak": [
+        "pengkalan-hulu",
+        "belum",
+        "temengor",
+        "belukar-samang",
+        "kerunai",
+        "gerik",
+        "kenering",
+        "lenggong"
+    ],
+    "kelantan": [
+        "tumpat",
+        "pasir-mas",
+        "kota-bharu",
+        "bachok",
+        "pasir-puteh",
+        "tanah-merah",
+        "machang",
+        "kuala-krai",
+        "mukim-chiku",
+        "jeli",
+        "gua-musang"
+    ]
+}
