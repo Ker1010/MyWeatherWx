@@ -20,6 +20,7 @@ html {
 }
 
 body {
+  background-color: #242424;
   margin: 0;
   padding: 0;
   width: 100%;
@@ -61,6 +62,40 @@ body {
 }
 
 .location-btn:active {
+  transform: scale(0.95);
+}
+
+.rain-btn {
+  position: absolute;
+  bottom: 84px; /* 30px + 44px + 10px gap */
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+  transition: all 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rain-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+  color: #fff;
+}
+
+.rain-btn.active {
+  background: rgba(33, 150, 243, 0.3);
+  color: #2196f3;
+  border-color: rgba(33, 150, 243, 0.5);
+  box-shadow: 0 0 15px rgba(33, 150, 243, 0.3);
+}
+
+.rain-btn:active {
   transform: scale(0.95);
 }
 
@@ -448,14 +483,13 @@ body {
   transform: rotate(180deg);
 }
 
-/* About Content */
 .about-content {
   display: flex;
   flex-direction: column;
   transition: opacity 0.3s, max-height 0.3s, margin-top 0.3s;
-  max-height: 500px; /* Arbitrary large height */
+  max-height: 500px;
   opacity: 1;
-  overflow: hidden;
+  overflow: auto;
   margin-top: 20px;
   gap: 20px;
 }
@@ -579,15 +613,11 @@ body {
       align-items: center;
       gap: 10px;
       max-height: 60px; /* Exact height for collapsed state */
-      
-      /* Keep full width for smooth "Drawer" animation */
-      /* right: 20px (inherited) */
   }
 
   .warning-filter .filter-header {
       width: 100%;
       flex-shrink: 0;
-      /* Ensure header is always clickable/visible */
       cursor: pointer;
   }
 
@@ -595,7 +625,6 @@ body {
       margin-bottom: 0;
       display: flex;
       align-items: center;
-      /* justify-content: space-between; inside header already */
   }
 
   .warning-filter.collapsed .filter-header h3 {
@@ -606,7 +635,6 @@ body {
       opacity: 1; /* Ensure visible */
   }
   
-  /* Hide content smoothly */
   .warning-filter .filter-content {
       opacity: 1;
       transition: opacity 0.3s ease;
@@ -616,7 +644,7 @@ body {
   .warning-filter.collapsed .filter-content {
       opacity: 0;
       pointer-events: none;
-      /* Remove display:none to allow smooth max-height transition of parent */
+      max-height: 0;
   }
 
   /* Make popups more mobile friendly */
@@ -630,6 +658,10 @@ body {
 
   .location-btn {
       bottom: 100px; /* Above the warning filter */
+  }
+
+  .rain-btn {
+      bottom: 154px; /* 100px + 44px + 10px gap */
   }
 }
 
@@ -747,5 +779,74 @@ body {
 
 .entry-list li::marker {
   color: #2196f3;
+}
+
+/* FAQ Section */
+.faq-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* margin-top: 10px; */ /* Let parent gap handle it or add if needed */
+}
+
+.faq-item details {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  transition: background 0.2s;
+
+  a {
+    color: white;
+  }
+}
+
+.faq-item details:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.faq-item summary {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ddd;
+  outline: none;
+  list-style: none; /* Hide default triangle */
+  position: relative;
+  padding-right: 32px; /* Space for icon */
+}
+
+/* Custom chevron icon if desired, or stick to default. Let's make it nice. */
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: '+';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #888;
+  font-weight: 300;
+  transition: transform 0.2s;
+}
+
+.faq-item details[open] summary::after {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.faq-item p {
+  margin: 0;
+  padding: 0 12px 12px 12px;
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.5;
+}
+
+.faq-item details[open] {
+  background: rgba(255, 255, 255, 0.08);
 }
 

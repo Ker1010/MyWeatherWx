@@ -97,7 +97,7 @@ export class WeatherWarningDecoder {
     const match = text.match(/over the (?:waters|states) of\s+(.+)/i);
     if (!match) return [];
     let locationRaw = match[1];
-    
+
     const timeStopWords = ["until", "within", "valid", "starting"];
     const lowerRaw = locationRaw.toLowerCase();
     for (const word of timeStopWords) {
@@ -106,37 +106,50 @@ export class WeatherWarningDecoder {
         locationRaw = locationRaw.substring(0, index);
       }
     }
-    
+
+    // Replace "and" & "&" with commas to treat them as separators
     locationRaw = locationRaw
       .replace(/\s+and\s+/gi, ",")
       .replace(/\s*&\s*/g, ",")
       .replace(/\.$/, "");
-    
+
     const finalLocations: string[] = [];
     const regions = locationRaw.split(";");
-    
+
     for (const region of regions) {
       let cleanRegion = region.trim();
       if (!cleanRegion) continue;
-      
+
       if (cleanRegion.includes(":")) {
         const afterColon = cleanRegion.split(":").slice(1).join(":").trim();
         if (afterColon) cleanRegion = afterColon;
       }
-      
-      // Extract content inside parentheses separately
-      const parensMatches = cleanRegion.matchAll(/\(([^)]+)\)/g);
-      for (const match of parensMatches) {
-        finalLocations.push(...match[1].split(","));
-      }
-      
-      // Remove parentheses and their content, then extract remaining
-      const withoutParens = cleanRegion.replace(/\([^)]*\)/g, "").trim();
-      if (withoutParens) {
-        finalLocations.push(...withoutParens.split(","));
+
+      // 1. Split by comma, but KEEP commas inside parentheses intact.
+      // This Regex matches sequences of characters that are NOT commas/open-parens, 
+      // OR complete parenthesized groups.
+      const parts = cleanRegion.match(/(?:[^,(]|\([^)]*\))+/g) || [cleanRegion];
+
+      for (const part of parts) {
+        const trimmedPart = part.trim();
+        if (!trimmedPart) continue;
+
+        if (trimmedPart.includes("(")) {
+          // CASE: "Johor (Segamat, Kluang)"
+          // Logic: If parentheses exist, we assume they qualify specific areas.
+          // We extract ONLY what is inside and IGNORE the outer text (the state name).
+          const parensMatches = trimmedPart.matchAll(/\(([^)]+)\)/g);
+          for (const match of parensMatches) {
+            finalLocations.push(...match[1].split(","));
+          }
+        } else {
+          // CASE: "Johor" or "Melaka"
+          // Logic: No parentheses means the whole area is targeted.
+          finalLocations.push(trimmedPart);
+        }
       }
     }
-    
+
     return [
       ...new Set(
         finalLocations

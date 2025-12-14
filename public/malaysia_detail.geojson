@@ -3002,7 +3002,7 @@
     },
     {
       "type": "Feature",
-      "id": "melaka-tengah",
+      "id": "melaka",
       "properties": {
         "name": "Melaka Tengah",
         "code_state": 4,
@@ -12913,7 +12913,7 @@
     },
     {
       "type": "Feature",
-      "id": "seberang-perai-tengah",
+      "id": "central-seberang-perai",
       "properties": {
         "name": "Seberang Perai Tengah",
         "code_state": 7,
@@ -13866,7 +13866,7 @@
     },
     {
       "type": "Feature",
-      "id": "seberang-perai-selatan",
+      "id": "south-seberang-perai",
       "properties": {
         "name": "Seberang Perai Selatan",
         "code_state": 7,
@@ -15401,7 +15401,7 @@
     },
     {
       "type": "Feature",
-      "id": "seberang-perai-utara",
+      "id": "north-seberang-perai",
       "properties": {
         "name": "Seberang Perai Utara",
         "code_state": 7,

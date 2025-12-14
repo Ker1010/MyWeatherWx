@@ -316,8 +316,20 @@ export class MapComponent {
           "raster-opacity": 0.8,
           "raster-fade-duration": 0,
         },
+        layout: {
+          visibility: "visible",
+        },
       },
       beforeLayer
+    );
+  }
+
+  public toggleRainViewerLayer(visible: boolean) {
+    if (!this.map.getLayer("rainviewer-radar")) return;
+    this.map.setLayoutProperty(
+      "rainviewer-radar",
+      "visibility",
+      visible ? "visible" : "none"
     );
   }
 
@@ -400,6 +412,9 @@ export class MapComponent {
         : "Until further notice";
 
       expandedLocations.forEach((location: string) => {
+        // Skip if this specific location string contains parentheses
+        if (location.includes("(") || location.includes(")")) return;
+
         const matchedFeatures = this.geojsonFeatures.filter((feature) => {
           const featureId = feature.id?.toLowerCase().replace(/\s+/g, "-");
           const featureName = feature.properties?.name
@@ -407,10 +422,14 @@ export class MapComponent {
             .replace(/\s+/g, "-");
           const featureState = feature.properties?.state?.toLowerCase();
 
+          const normalizedLocation = location
+            .toLowerCase()
+            .replace(/\s+/g, "-");
+
           return (
-            featureId === location ||
-            featureName === location ||
-            featureState === location
+            featureId === normalizedLocation ||
+            featureName === normalizedLocation ||
+            featureState === normalizedLocation
           );
         });
 
@@ -419,7 +438,7 @@ export class MapComponent {
             type: "Feature",
             geometry: feature.geometry,
             properties: {
-              ...feature.properties, // Keep original properties
+              ...feature.properties,
               color,
               strokeWeight,
               heading_en: warning.heading_en,

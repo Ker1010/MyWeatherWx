@@ -6,8 +6,19 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: 'v0.4 Beta',
+    date: '2025-12-14',
+    changes: [
+      'Added QNA',
+      'Toggle RainViewer layer',
+      'More area coverage',
+      'Change location Decode logic',
+      'Some Animations improvements',
+    ]
+  },
+  {
     version: 'v0.3 Beta',
-    date: '2025-12-12',
+    date: '2025-12-14',
     changes: [
         'More area coverage',
         'Fix Raw Warning Data Ui issue',
@@ -16,7 +27,7 @@ export const changelogData: ChangelogEntry[] = [
   },
   {
     version: 'v0.2 Beta',
-    date: '2025-12-12',
+    date: '2025-12-14',
     changes: [
         'Added Change log',
         'Added Map Label',
@@ -26,7 +37,7 @@ export const changelogData: ChangelogEntry[] = [
   },
   {
     version: 'v0.1 Beta',
-    date: '2025-12-11',
+    date: '2025-12-13',
     changes: [
       'Initial beta release',
       'Integrated MapLibre GL for Malaysia map',

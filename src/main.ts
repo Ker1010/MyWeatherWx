@@ -81,6 +81,20 @@ locationBtn?.addEventListener('click', () => {
     mapComponent.showUserLocation();
 });
 
+
+const rainToggleBtn = document.getElementById('rain-toggle-btn');
+let rainViewerVisible = true;
+
+rainToggleBtn?.addEventListener('click', () => {
+    rainViewerVisible = !rainViewerVisible;
+    mapComponent.toggleRainViewerLayer(rainViewerVisible);
+    if (rainViewerVisible) {
+        rainToggleBtn.classList.add('active');
+    } else {
+        rainToggleBtn.classList.remove('active');
+    }
+});
+
 mapComponent.onLoad(async () => {
     // 1. Load Radar
     const data = await RainViewerService.fetchData();
