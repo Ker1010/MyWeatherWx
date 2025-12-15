@@ -240,5 +240,44 @@
     "limbang": [
         "limbang",
         "lawas"
+    ],
+    "sibu": [
+        "sibu",
+        "kanowit",
+        "selangau"
+    ],
+    "mukah": [
+        "mukah",
+        "dalat",
+        "matu",
+        "daro",
+        "tanjung-manis"
+    ],
+    "sri-aman": [
+        "sri-aman",
+        "lubok-antu",
+        "saratok",
+        "kabong",
+        "pusa"
+    ],
+    "sarikei": [
+        "sarikei",
+        "maradong",
+        "julau",
+        "pakan"
+    ],
+    "samarahan": [
+        "samarahan",
+        "asajaya",
+        "simunjan"
+    ],
+    "serian": [
+        "serian",
+        "tebedu"
+    ],
+    "kuching": [
+        "kuching",
+        "bau",
+        "lundu"
     ]
 }
