@@ -11,6 +11,7 @@ export const changelogData: ChangelogEntry[] = [
     changes: [
       'Lightning strikes (thanks to Blitzortung) 🎉',
       'Reload Warning Data every 3 minutes',
+      'Separate Warning Thunderstorm Filter',
       'More area coverage',
       'SEO Improvements',
     ]
