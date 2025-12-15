@@ -1,5 +1,5 @@
 export interface DecodedWarning extends WeatherWarningDataList {
-  locations: string[];
+  locations: Array<[string, boolean]>;
   category?:
     | "first"
     | "second"
@@ -95,19 +95,22 @@ export class WeatherWarningDecoder {
     return decoded;
   }
 
-  private static formatlocations(locations: string[]): string[] {
+  private static formatlocations(locations: { location: string; isDetail: boolean }[]): Array<[string, boolean]> {
     return locations.map((location) =>
-      location.trim().toLowerCase().replace(/\s+/g, "-")
+      [location.location.trim().toLowerCase().replace(/\s+/g, "-"), location.isDetail]
     );
   }
 
-  private static extractLocations(text: string): string[] {
+  private static extractLocations(
+    text: string
+  ): Array<{ location: string; isDetail: boolean }> {
     const match = text.match(/over the (?:waters|states) of\s+(.+)/i);
     if (!match) return [];
-    let locationRaw = match[1];
 
+    let locationRaw = match[1];
     const timeStopWords = ["until", "within", "valid", "starting"];
     const lowerRaw = locationRaw.toLowerCase();
+
     for (const word of timeStopWords) {
       const index = lowerRaw.indexOf(` ${word} `);
       if (index !== -1) {
@@ -115,13 +118,12 @@ export class WeatherWarningDecoder {
       }
     }
 
-    // Replace "and" & "&" with commas to treat them as separators
     locationRaw = locationRaw
       .replace(/\s+and\s+/gi, ",")
       .replace(/\s*&\s*/g, ",")
       .replace(/\.$/, "");
 
-    const finalLocations: string[] = [];
+    const finalLocations: Array<{ location: string; isDetail: boolean }> = [];
     const regions = locationRaw.split(";");
 
     for (const region of regions) {
@@ -133,9 +135,6 @@ export class WeatherWarningDecoder {
         if (afterColon) cleanRegion = afterColon;
       }
 
-      // Split by comma, but KEEP commas inside parentheses intact.
-      // This Regex matches sequences of characters that are NOT commas/open-parens, 
-      // OR complete parenthesized groups.
       const parts = cleanRegion.match(/(?:[^,(]|\([^)]*\))+/g) || [cleanRegion];
 
       for (const part of parts) {
@@ -143,28 +142,45 @@ export class WeatherWarningDecoder {
         if (!trimmedPart) continue;
 
         if (trimmedPart.includes("(")) {
-          // CASE: "Johor (Segamat, Kluang)"
-          // Logic: If parentheses exist, we assume they qualify specific areas.
-          // We extract ONLY what is inside and IGNORE the outer text (the state name).
+          // Extract prefix
+          const prefix = trimmedPart
+            .substring(0, trimmedPart.indexOf("("))
+            .trim();
+          const normalizedPrefix = prefix.toLowerCase().replace(/\s+/g, "-");
+
+          // Extract details inside parentheses
           const parensMatches = trimmedPart.matchAll(/\(([^)]+)\)/g);
           for (const match of parensMatches) {
-            finalLocations.push(...match[1].split(","));
+            const locations = match[1].split(",");
+            for (const loc of locations) {
+              const normalized = loc.trim().toLowerCase().replace(/\s+/g, "-");
+
+              // If location inside () matches the prefix, mark as false (use prefix instead)
+              // Otherwise mark as true (use the detail)
+              if (normalized === normalizedPrefix) {
+                finalLocations.push({ location: prefix, isDetail: false });
+              } else {
+                finalLocations.push({ location: loc.trim(), isDetail: true });
+              }
+            }
           }
         } else {
-          // CASE: "Johor" or "Melaka"
-          // Logic: No parentheses means the whole area is targeted.
-          finalLocations.push(trimmedPart);
+          // No parentheses - whole area
+          finalLocations.push({ location: trimmedPart, isDetail: true });
         }
       }
     }
 
-    return [
-      ...new Set(
-        finalLocations
-          .map((loc) => loc.trim().toLowerCase().replace(/\s+/g, "-"))
-          .filter((loc) => loc.length > 0 && loc !== "n" && loc !== "ft")
-      ),
-    ];
+    // Remove duplicates based on normalized location
+    const seen = new Set<string>();
+    const unique = finalLocations.filter((item) => {
+      const normalized = item.location.toLowerCase().replace(/\s+/g, "-");
+      if (seen.has(normalized)) return false;
+      seen.add(normalized);
+      return normalized.length > 0 && normalized !== "n" && normalized !== "ft";
+    });
+
+    return unique;
   }
 
   private static extractCategory(heading: string): DecodedWarning["category"] {
@@ -172,7 +188,7 @@ export class WeatherWarningDecoder {
     if (heading.includes("Second Category")) return "second";
     if (heading.includes("First Category")) return "first";
     if (heading.includes("Alert")) return "alert";
-    
+
     // Split Thunderstorm Logic
     const lower = heading.toLowerCase();
     if (lower.includes("warning on thunderstorms")) return "thunderstorm_watch";
@@ -202,20 +218,20 @@ export class WeatherWarningDecoder {
 
     // ONLY process Thunderstorm warnings
     if (lowerTitle.includes("thunderstorm")) {
-        // Logic: "Thunderstorms Warning" (Land/Short-term) -> "Thunderstorm Warning" (or Severe)
-        //        "Warning on Thunderstorms" (Marine/Longer-term) -> "Thunderstorm Watch"
-        
-        if (lowerTitle === "thunderstorms warning") {
-            return "Thunderstorm Warning";
-        }
-        
-        if (lowerTitle === "warning on thunderstorms") {
-             // Mapping "Warning on..." to "Watch" based on the user's request for "Warning or Watch" distinction
-            return "Thunderstorm Watch";
-        }
-        
-        // Fallback cleanup for other potential thunderstorm strings
-        return title.replace(/Thunderstorms/i, "Thunderstorm");
+      // Logic: "Thunderstorms Warning" (Land/Short-term) -> "Thunderstorm Warning" (or Severe)
+      //        "Warning on Thunderstorms" (Marine/Longer-term) -> "Thunderstorm Watch"
+
+      if (lowerTitle === "thunderstorms warning") {
+        return "Thunderstorm Warning";
+      }
+
+      if (lowerTitle === "warning on thunderstorms") {
+        // Mapping "Warning on..." to "Watch" based on the user's request for "Warning or Watch" distinction
+        return "Thunderstorm Watch";
+      }
+
+      // Fallback cleanup for other potential thunderstorm strings
+      return title.replace(/Thunderstorms/i, "Thunderstorm");
     }
 
     // For everything else, return original heading

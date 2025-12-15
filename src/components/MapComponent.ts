@@ -495,8 +495,11 @@ export class MapComponent {
     filteredWarnings.forEach((warning) => {
       if (!warning.locations?.length) return;
 
-      const expandedLocations = warning.locations.flatMap((loc: string) => {
-        return MapComponent.REGION_MAPPING[loc] || [loc];
+      const expandedLocations = warning.locations.flatMap((loc: [string, boolean]) => {
+        if (!loc[1]) {
+          return [loc[0]];
+        }
+        return MapComponent.REGION_MAPPING[loc[0]] || [loc[0]];
       });
 
       const color =
@@ -514,23 +517,19 @@ export class MapComponent {
         : "Until further notice";
 
       expandedLocations.forEach((location: string) => {
-        if (location.includes("(") || location.includes(")")) return;
+
+        const cleanLocationName = location.split('(')[0].trim().toLowerCase().replace(/\s+/g, "-");
 
         const matchedFeatures = this.geojsonFeatures.filter((feature) => {
           const featureId = feature.id?.toLowerCase().replace(/\s+/g, "-");
-          const featureName = feature.properties?.name
-            ?.toLowerCase()
-            .replace(/\s+/g, "-");
-          const featureState = feature.properties?.state?.toLowerCase();
-
-          const normalizedLocation = location
-            .toLowerCase()
-            .replace(/\s+/g, "-");
+          
+          // Helper to clean feature names too
+          const rawName = feature.properties?.name || "";
+          const featureName = rawName.toLowerCase().replace(/\s+/g, "-");
 
           return (
-            featureId === normalizedLocation ||
-            featureName === normalizedLocation ||
-            featureState === normalizedLocation
+            featureId === cleanLocationName ||
+            featureName === cleanLocationName
           );
         });
 
