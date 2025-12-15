@@ -67,6 +67,8 @@
     "selangor": [
         "sabak-bernam",
         "kuala-selangor",
+        "ft-kuala-lumpur",
+        "ft-putrajaya",
         "klang",
         "kuala-langat",
         "sepang",
@@ -217,5 +219,19 @@
     ],
     "wp-labuan": [
         "labuan"
+    ],
+    "bintulu": [
+        "bintulu",
+        "tatau"
+    ],
+    "kapit": [
+        "kapit",
+        "bukit-mabong"
+    ],
+    "mersing": [
+        "mersing",
+        "pulau-tioman",
+        "pulau-pemanggil",
+        "pulau-aur"
     ]
 }
