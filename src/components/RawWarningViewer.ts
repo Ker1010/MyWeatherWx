@@ -24,6 +24,7 @@ export class RawWarningViewer {
     }
 
     public show(warnings: DecodedWarning[]) {
+        console.log('Displaying raw warnings:', warnings);
         this.render(warnings);
         this.container.style.display = 'flex';
     }

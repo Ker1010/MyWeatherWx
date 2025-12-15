@@ -110,7 +110,7 @@ mapComponent.onLoad(async () => {
             const warningData = await WeatherWarningService.fetchData();
             if (warningData) {
                 const decoded = WeatherWarningDecoder.decode(warningData);
-                // currentWarnings = decoded; // Make sure currentWarnings is defined in scope
+                currentWarnings = decoded; // Make sure currentWarnings is defined in scope
                 mapComponent.highlightWarningAreas(decoded);
             }
         } catch (err) {
