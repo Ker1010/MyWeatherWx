@@ -53,7 +53,9 @@ export class RawWarningViewer {
                     <div class="warning-meta">
                         <span class="badge category">${warning.category || 'N/A'}</span>
                         <span class="badge type">${warning.warningType || 'N/A'}</span>
-                        <span class="locations">Locations: ${warning.locations.join(', ')}</span>
+                        <span class="locations">
+                        Locations: ${warning.locations.map(([loc]) => loc).join(', ')}
+                        </span>
                     </div>
                 </div>
             </div>
