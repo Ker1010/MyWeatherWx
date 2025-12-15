@@ -118,7 +118,7 @@ class Client extends EventEmitter {
       }
     };
 
-    this.socket.onerror = (err: Event) => {
+    this.socket.onerror = (_err: Event) => {
       this.emit("error", new Error("WebSocket error"));
       setTimeout(() => this.connect(), 2000);
     };
