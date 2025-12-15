@@ -3,19 +3,25 @@ import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { DecodedWarning } from "../services/WeatherWarning";
 import type { FilterState } from "./WarningFilter";
+import type { LightningStrike } from "../services/LightningService";
+import { LightningService } from "../services/LightningService";
 
 export class MapComponent {
   private userLocationMarker?: maplibregl.Marker;
   private map: MapLibreMap;
+  private animationInterval: any;
   private containerId: string;
   private geojsonFeatures: any[] = [];
   private allWarnings: DecodedWarning[] = [];
+  private lightningService: LightningService;
   private currentFilter: FilterState = {
     categories: new Set([
       "first",
       "second",
       "third",
-      "thunderstorm",
+      "third",
+      "thunderstorm_warning",
+      "thunderstorm_watch",
       "continuous_rain",
       "sea_level",
       "tropical_cyclone",
@@ -117,10 +123,12 @@ export class MapComponent {
       container: this.containerId,
       style: MapComponent.BASE_MAP_STYLE,
       center: [109.45, 4.11],
-      zoom: isMobile ? 3.5 : 5.5,
       maxZoom: 8,
+      zoom: isMobile ? 3.5 : 5.5,
       attributionControl: false,
     });
+    this.lightningService = new LightningService();
+    this.lightningService.connect();
   }
 
   public onLoad(callback: () => void) {
@@ -149,6 +157,15 @@ export class MapComponent {
 
       this.initializeWarningLayers();
       this.map.resize();
+
+      // Register lightning callback AFTER map is fully loaded
+      this.lightningService.onStrikesUpdate((strikes) => {
+        this.updateLightningLayer(strikes);
+      });
+
+      // 2. Start the visual fading animation loop
+      this.startLightningAnimation();
+
       callback();
     });
   }
@@ -156,6 +173,7 @@ export class MapComponent {
   private initializeWarningLayers() {
     if (this.map.getSource("warnings-source")) return;
 
+    // Warning source
     this.map.addSource("warnings-source", {
       type: "geojson",
       data: {
@@ -163,7 +181,8 @@ export class MapComponent {
         features: [],
       },
     });
-    // Fill layer
+
+    // Warning fill layer
     this.map.addLayer(
       {
         id: "warnings-fill",
@@ -175,9 +194,9 @@ export class MapComponent {
         },
       },
       "malaysia-outline"
-    ); // Place below malaysia-outline
+    );
 
-    // Line layer
+    // Warning line layer
     this.map.addLayer(
       {
         id: "warnings-line",
@@ -192,7 +211,40 @@ export class MapComponent {
       "malaysia-outline"
     );
 
-    // Interaction
+    // Initialize lightning source and layer
+    if (!this.map.getSource("lightning-source")) {
+      this.map.addSource("lightning-source", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      });
+
+      this.map.addLayer({
+        id: "lightning-layer",
+        type: "circle",
+        source: "lightning-source",
+        paint: {
+          "circle-radius": 4,
+          "circle-color": "#FFFFFF",
+          "circle-stroke-color": "#FFEB3B",
+          "circle-stroke-width": 2,
+          "circle-opacity": [
+            "interpolate",
+            ["linear"],
+            ["get", "time"],
+            Date.now() - 60000, 0,
+            Date.now(), 1
+          ],
+        },
+        layout: {
+          visibility: "visible",
+        },
+      });
+    }
+
+    // Interaction for warnings
     this.map.on("click", "warnings-fill", (e) => {
       if (!e.features || !e.features.length) return;
 
@@ -203,7 +255,7 @@ export class MapComponent {
       const color = props.color;
 
       const popupContent = `
-                <div style="color: #333; font-family: sans-serif;>
+                <div style="color: #333; font-family: sans-serif;">
                     <h3 style="margin: 0 0 8px 0; font-size: 16px; border-bottom: 2px solid ${color}; padding-bottom: 4px;">${
         props.heading_en
       }</h3>
@@ -243,6 +295,51 @@ export class MapComponent {
     });
   }
 
+  private startLightningAnimation() {
+    // Clear any existing interval just in case
+    if (this.animationInterval) clearInterval(this.animationInterval);
+
+    // Update the opacity rule every 1 second
+    this.animationInterval = setInterval(() => {
+        if (this.map.getLayer("lightning-layer")) {
+            const now = Date.now();
+            
+            // This updates the paint property dynamically
+            this.map.setPaintProperty("lightning-layer", "circle-opacity", [
+                "interpolate",
+                ["linear"],
+                ["get", "time"],
+                now - 60000, 0,  // If time was 60s ago (or more), opacity is 0
+                now, 1           // If time is now, opacity is 1
+            ]);
+        }
+    }, 1000); // Run every second
+  }
+
+  private updateLightningLayer(strikes: LightningStrike[]) {
+    const source = this.map.getSource("lightning-source") as GeoJSONSource;
+    if (!source) {
+      console.warn("Lightning source not ready yet");
+      return;
+    }
+
+    const features = strikes.map((s) => ({
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [s.lon, s.lat],
+      },
+      properties: {
+        time: s.time,
+      },
+    }));
+
+    source.setData({
+      type: "FeatureCollection",
+      features: features as any,
+    });
+  }
+
   public showUserLocation() {
     if (!navigator.geolocation) {
       console.error("Geolocation not supported");
@@ -253,12 +350,10 @@ export class MapComponent {
       (position) => {
         const { longitude, latitude } = position.coords;
 
-        // Remove existing marker if any
         if (this.userLocationMarker) {
           this.userLocationMarker.remove();
         }
 
-        // Create marker element
         const el = document.createElement("div");
         el.style.width = "20px";
         el.style.height = "20px";
@@ -267,12 +362,10 @@ export class MapComponent {
         el.style.border = "3px solid white";
         el.style.boxShadow = "0 0 10px rgba(0,0,0,0.3)";
 
-        // Add marker to map
         this.userLocationMarker = new maplibregl.Marker({ element: el })
           .setLngLat([longitude, latitude])
           .addTo(this.map);
 
-        // Optional: fly to user location
         this.map.flyTo({
           center: [longitude, latitude],
           zoom: 8,
@@ -294,6 +387,7 @@ export class MapComponent {
 
   public addRainViewerLayer(timestamp: number) {
     if (this.map.getSource("rainviewer")) return;
+
     this.map.addSource("rainviewer", {
       type: "raster",
       tiles: [
@@ -307,6 +401,7 @@ export class MapComponent {
     const beforeLayer = this.map.getLayer("malaysia-outline")
       ? "malaysia-outline"
       : undefined;
+
     this.map.addLayer(
       {
         id: "rainviewer-radar",
@@ -328,6 +423,11 @@ export class MapComponent {
     if (!this.map.getLayer("rainviewer-radar")) return;
     this.map.setLayoutProperty(
       "rainviewer-radar",
+      "visibility",
+      visible ? "visible" : "none"
+    );
+    this.map.setLayoutProperty(
+      "lightning-layer",
       "visibility",
       visible ? "visible" : "none"
     );
@@ -353,7 +453,8 @@ export class MapComponent {
       second: "#FF9800",
       third: "#F44336",
       alert: "#9C27B0",
-      thunderstorm: "#2196F3",
+      thunderstorm_warning: "#2196F3",
+      thunderstorm_watch: "#2196F3", // Same color as warning
       continuous_rain: "#4CAF50",
       sea_level: "#00BCD4",
       tropical_cyclone: "#9C27B0",
@@ -364,7 +465,8 @@ export class MapComponent {
       second: 2,
       third: 4,
       alert: 1,
-      thunderstorm: 2,
+      thunderstorm_warning: 2,
+      thunderstorm_watch: 2,
       continuous_rain: 1,
       tropical_cyclone: 4,
     };
@@ -412,7 +514,6 @@ export class MapComponent {
         : "Until further notice";
 
       expandedLocations.forEach((location: string) => {
-        // Skip if this specific location string contains parentheses
         if (location.includes("(") || location.includes(")")) return;
 
         const matchedFeatures = this.geojsonFeatures.filter((feature) => {

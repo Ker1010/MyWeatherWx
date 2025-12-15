@@ -1,4 +1,4 @@
-export type WarningCategory = 'first' | 'second' | 'third' | 'alert' | 'thunderstorm' | 'sea_level' | 'no_advisory' | 'continuous_rain' | 'tropical_cyclone';
+export type WarningCategory = 'first' | 'second' | 'third' | 'alert' | 'thunderstorm_warning' | 'thunderstorm_watch' | 'sea_level' | 'no_advisory' | 'continuous_rain' | 'tropical_cyclone';
 
 export interface FilterState {
     categories: Set<string>;
@@ -13,11 +13,21 @@ export class WarningFilter {
     private onToggleRawView?: () => void;
 
     // Ordered categories for display
-    private static CATEGORIES: { id: string; label: string }[] = [
+    private static CATEGORIES: { 
+        id?: string; 
+        label: string;
+        subItems?: { id: string; label: string }[] 
+    }[] = [
         { id: 'first', label: 'First Category (Strong Wind/Rough Sea)' },
         { id: 'second', label: 'Second Category (Strong Wind/Rough Sea)' },
         { id: 'third', label: 'Third Category (Strong Wind/Rough Sea)' },
-        { id: 'thunderstorm', label: 'Thunderstorm' },
+        { 
+            label: 'Thunderstorm',
+            subItems: [
+                { id: 'thunderstorm_warning', label: 'Warning' },
+                { id: 'thunderstorm_watch', label: 'Watch' }
+            ]
+        },
         { id: 'continuous_rain', label: 'Continuous Rain' },
         { id: 'sea_level', label: 'Sea Level Rise' },
         { id: 'tropical_cyclone', label: 'Tropical Cyclone' },
@@ -27,8 +37,15 @@ export class WarningFilter {
     constructor(onChange: (state: FilterState) => void, onToggleRawView?: () => void) {
         this.onChange = onChange;
         this.onToggleRawView = onToggleRawView;
+        
+        // Initialize with all IDs (including sub-items)
+        const allIds = WarningFilter.CATEGORIES.flatMap(c => {
+            if (c.subItems) return c.subItems.map(s => s.id);
+            return [c.id!];
+        });
+        
         this.state = {
-            categories: new Set(WarningFilter.CATEGORIES.map(c => c.id)),
+            categories: new Set(allIds),
             status: new Set(['active']) // Default to active only
         };
 
@@ -62,13 +79,7 @@ export class WarningFilter {
                 </div>
                 <div class="filter-section">
                     <h4>Categories</h4>
-                    ${WarningFilter.CATEGORIES.map(cat => `
-                        <label class="checkbox-container">
-                            <input type="checkbox" value="${cat.id}" checked>
-                            <span class="checkmark"></span>
-                            ${cat.label}
-                        </label>
-                    `).join('')}
+                    ${this.renderCategories()}
                 </div>
             </div>
         `;
@@ -94,6 +105,37 @@ export class WarningFilter {
                 if (this.onToggleRawView) this.onToggleRawView();
             });
         }
+    }
+
+    private renderCategories(): string {
+        return WarningFilter.CATEGORIES.map(cat => {
+            if (cat.subItems) {
+                // Render Group
+                const subItemsHtml = cat.subItems.map(sub => `
+                    <label class="checkbox-container sub-item">
+                        <input type="checkbox" value="${sub.id}" ${this.state.categories.has(sub.id) ? 'checked' : ''}>
+                        <span class="checkmark"></span>
+                        ${sub.label}
+                    </label>
+                `).join('');
+
+                return `
+                    <div class="category-group">
+                        <span class="group-label">${cat.label}</span>
+                        ${subItemsHtml}
+                    </div>
+                `;
+            } else {
+                // Render Single Item
+                return `
+                    <label class="checkbox-container">
+                        <input type="checkbox" value="${cat.id}" ${this.state.categories.has(cat.id!) ? 'checked' : ''}>
+                        <span class="checkmark"></span>
+                        ${cat.label}
+                    </label>
+                `;
+            }
+        }).join('');
     }
 
     private handleCheckboxChange(e: Event) {

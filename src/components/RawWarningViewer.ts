@@ -41,7 +41,7 @@ export class RawWarningViewer {
         const itemsHtml = warnings.map(warning => `
             <div class="warning-item">
                 <div class="warning-header" style="border-left: 4px solid ${this.getCategoryColor(warning.category)}">
-                    <h4>${warning.heading_en}</h4>
+                    <h4>${warning.formattedTitle}</h4>
                     <span class="warning-time">
                         ${this.formatTimeRange(warning.valid_from, warning.valid_to)}
                     </span>
@@ -77,7 +77,8 @@ export class RawWarningViewer {
             'second': '#FF9800',
             'third': '#F44336',
             'alert': '#9C27B0',
-            'thunderstorm': '#2196F3',
+            'thunderstorm_warning': '#2196F3',
+            'thunderstorm_watch': '#2196F3',
             'continuous_rain': '#4CAF50',
             'sea_level': '#00BCD4',
             'tropical_cyclone': '#9C27B0'

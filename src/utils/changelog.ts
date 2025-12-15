@@ -6,6 +6,16 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: 'v0.6 Beta',
+    date: '2025-12-15',
+    changes: [
+      'Lightning strikes (thanks to Blitzortung) 🎉',
+      'Reload Warning Data every 3 minutes',
+      'More area coverage',
+      'SEO Improvements',
+    ]
+  },
+  {
     version: 'v0.5 Beta',
     date: '2025-12-14',
     changes: [

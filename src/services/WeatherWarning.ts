@@ -5,7 +5,8 @@ export interface DecodedWarning extends WeatherWarningDataList {
     | "second"
     | "third"
     | "alert"
-    | "thunderstorm"
+    | "thunderstorm_warning"
+    | "thunderstorm_watch"
     | "sea_level"
     | "no_advisory";
   warningType:
@@ -14,7 +15,10 @@ export interface DecodedWarning extends WeatherWarningDataList {
     | "thunderstorm"
     | "sea_level"
     | "tropical_cyclone"
+    | "sea_level"
+    | "tropical_cyclone"
     | "no_advisory";
+  formattedTitle: string;
 }
 
 export type WeatherWarningData = WeatherWarningDataList[];
@@ -71,15 +75,19 @@ export class WeatherWarningDecoder {
       );
       const category = this.extractCategory(warning.heading_en);
       const warningType = this.extractWarningType(warning.heading_en);
+      const formattedTitle = this.formatTitle(warning.heading_en);
+
       console.log("Extracted locations:", locations);
       console.log("Category:", category);
       console.log("Warning type:", warningType);
+      console.log("Formatted Title:", formattedTitle);
 
       return {
         ...warning,
         locations: locations,
         category,
         warningType,
+        formattedTitle,
       };
     });
 
@@ -125,7 +133,7 @@ export class WeatherWarningDecoder {
         if (afterColon) cleanRegion = afterColon;
       }
 
-      // 1. Split by comma, but KEEP commas inside parentheses intact.
+      // Split by comma, but KEEP commas inside parentheses intact.
       // This Regex matches sequences of characters that are NOT commas/open-parens, 
       // OR complete parenthesized groups.
       const parts = cleanRegion.match(/(?:[^,(]|\([^)]*\))+/g) || [cleanRegion];
@@ -164,7 +172,13 @@ export class WeatherWarningDecoder {
     if (heading.includes("Second Category")) return "second";
     if (heading.includes("First Category")) return "first";
     if (heading.includes("Alert")) return "alert";
-    if (heading.includes("Thunderstorm")) return "thunderstorm";
+    
+    // Split Thunderstorm Logic
+    const lower = heading.toLowerCase();
+    if (lower.includes("warning on thunderstorms")) return "thunderstorm_watch";
+    if (lower.includes("thunderstorms warning")) return "thunderstorm_warning";
+    if (heading.includes("Thunderstorm")) return "thunderstorm_warning"; // Fallback
+
     if (heading.includes("Sea Level")) return "sea_level";
     if (heading.includes("No Advisory")) return "no_advisory";
     return undefined;
@@ -180,5 +194,31 @@ export class WeatherWarningDecoder {
     if (heading.includes("Sea Level")) return "sea_level";
     if (heading.includes("No Advisory")) return "no_advisory";
     return "tropical_cyclone";
+  }
+
+  private static formatTitle(heading: string): string {
+    const title = heading.trim();
+    const lowerTitle = title.toLowerCase();
+
+    // ONLY process Thunderstorm warnings
+    if (lowerTitle.includes("thunderstorm")) {
+        // Logic: "Thunderstorms Warning" (Land/Short-term) -> "Thunderstorm Warning" (or Severe)
+        //        "Warning on Thunderstorms" (Marine/Longer-term) -> "Thunderstorm Watch"
+        
+        if (lowerTitle === "thunderstorms warning") {
+            return "Thunderstorm Warning";
+        }
+        
+        if (lowerTitle === "warning on thunderstorms") {
+             // Mapping "Warning on..." to "Watch" based on the user's request for "Warning or Watch" distinction
+            return "Thunderstorm Watch";
+        }
+        
+        // Fallback cleanup for other potential thunderstorm strings
+        return title.replace(/Thunderstorms/i, "Thunderstorm");
+    }
+
+    // For everything else, return original heading
+    return title;
   }
 }

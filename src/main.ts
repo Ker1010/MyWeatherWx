@@ -96,18 +96,31 @@ rainToggleBtn?.addEventListener('click', () => {
 });
 
 mapComponent.onLoad(async () => {
-    // 1. Load Radar
+    // 1. Load Radar (Keep as is)
     const data = await RainViewerService.fetchData();
     if (data?.radar?.past?.length) {
         const latestPast = data.radar.past[data.radar.past.length - 1];
         mapComponent.addRainViewerLayer(latestPast.time);
     }
-    
-    // 2. Load and highlight warnings
-    const warningData = await WeatherWarningService.fetchData();
-    if (warningData) {
-        const decoded = WeatherWarningDecoder.decode(warningData);
-        currentWarnings = decoded;
-        mapComponent.highlightWarningAreas(decoded);
-    }
+
+    // 2. Define the function for fetching warnings
+    const fetchWarnings = async () => {
+        console.log("Fetching warnings..."); // Debug log to verify it runs
+        try {
+            const warningData = await WeatherWarningService.fetchData();
+            if (warningData) {
+                const decoded = WeatherWarningDecoder.decode(warningData);
+                // currentWarnings = decoded; // Make sure currentWarnings is defined in scope
+                mapComponent.highlightWarningAreas(decoded);
+            }
+        } catch (err) {
+            console.error("Warning fetch failed:", err);
+        }
+    };
+
+    // 3. EXECUTE IMMEDIATELY
+    await fetchWarnings(); 
+
+    // 4. Then set the interval for future pulls
+    setInterval(fetchWarnings, 3 * 60 * 1000); 
 });

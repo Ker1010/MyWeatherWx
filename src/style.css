@@ -167,7 +167,6 @@ body {
 }
 
 .icon-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
 
@@ -179,7 +178,7 @@ body {
   margin-bottom: 0;
 }
 
-.filter-section h4 {
+.filter-section h4, span {
   margin: 0 0 8px 0;
   font-size: 13px;
   color: #888;
@@ -850,3 +849,36 @@ body {
   background: rgba(255, 255, 255, 0.08);
 }
 
+
+/* Nested Warning Filter Styles */
+.category-group {
+    margin-bottom: 8px;
+}
+
+.group-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    padding-left: 0;
+}
+
+.checkbox-container.sub-item {
+    margin-left: 20px;
+    font-size: 13px;
+    color: #ccc;
+    padding-left: 25px; /* Adjust for checkmark */
+}
+
+.checkbox-container.sub-item .checkmark {
+    width: 16px;
+    height: 16px;
+    top: 2px;
+}
+
+.checkbox-container.sub-item .checkmark:after {
+    left: 6px;
+    top: 3px;
+    width: 3px;
+    height: 8px;
+}

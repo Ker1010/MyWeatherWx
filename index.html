@@ -12,33 +12,42 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="/MyWeatherWx.png">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MyWeatherWX App</title>
+
+  <title>MyWeatherWX - Real-Time Malaysia Weather Radar & Warnings</title>
+  <meta name="description"
+    content="High-precision weather radar & warning system for Malaysia. Real-time rain radar, storm alerts, and lightning tracking. Stay safe with accurate weather data.">
+  <meta name="keywords"
+    content="Malaysia Weather, Rain Radar, Weather Warning, Thunderstorm, Lightning, MetMalaysia, Kuala Lumpur Weather, Weather App">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://mywx.kerserver.org/">
 
   <!-- Open Graph / Discord Embed -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="MyWeatherWX App">
+  <meta property="og:title" content="MyWeatherWX - Real-Time Malaysia Weather Radar">
   <meta property="og:description"
     content="High-precision weather radar & warning system for Malaysia. Real-time rain radar and weather alerts.">
-  <meta property="og:image" content="/MyWeatherWx.png">
-  <meta property="og:url" content="https://mywx.kerserver.org">
+  <meta property="og:image" content="https://mywx.kerserver.org/MyWeatherWx.png">
+  <meta property="og:url" content="https://mywx.kerserver.org/">
 
-  <!-- Twitter Card (optional, for better embeds) -->
+  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="MyWeatherWX App">
-  <meta name="twitter:description" content="High-precision weather radar & warning system for Malaysia.">
-  <meta name="twitter:image" content="/MyWeatherWx.png">
+  <meta name="twitter:title" content="MyWeatherWX - Real-Time Malaysia Weather Radar">
+  <meta name="twitter:description"
+    content="High-precision weather radar & warning system for Malaysia. Real-time rain radar and weather alerts.">
+  <meta name="twitter:image" content="https://mywx.kerserver.org/MyWeatherWx.png">
 </head>
 
 <body>
   <div id="map"></div>
 
   <!-- Location Button -->
-  <button id="location-btn" class="glass-panel location-btn" title="Show My Location">
+  <button id="location-btn" class="glass-panel location-btn" title="Show My Location" aria-label="Show My Location">
     <i class="bi bi-crosshair"></i>
   </button>
 
   <!-- Rain Toggle Button -->
-  <button id="rain-toggle-btn" class="glass-panel rain-btn active" title="Toggle Rain Radar">
+  <button id="rain-toggle-btn" class="glass-panel rain-btn active" title="Toggle Rain Radar"
+    aria-label="Toggle Rain Radar">
     <i class="bi bi-cloud-rain-fill"></i>
   </button>
 
@@ -52,7 +61,7 @@
           <span class="version" id="app-version"></span>
         </div>
       </div>
-      <button class="icon-btn" id="about-toggle">
+      <button class="icon-btn" id="about-toggle" aria-label="Toggle About Panel">
         <i class="bi bi-chevron-up"></i>
       </button>
     </div>
@@ -63,9 +72,13 @@
       <div class="source-section">
         <label>Data Sources</label>
         <div class="source-tags">
-          <a href="https://www.met.gov.my/" class="source-tag">MetMalaysia</a>
-          <a href="https://www.rainviewer.com/" class="source-tag">RainViewer</a>
-          <a href="https://github.com/mptwaktusolat/jakim.geojson/" class="source-tag">MapData</a>
+          <a href="https://www.met.gov.my/" class="source-tag" target="_blank" rel="noopener noreferrer">MetMalaysia</a>
+          <a href="https://www.rainviewer.com/" class="source-tag" target="_blank"
+            rel="noopener noreferrer">RainViewer</a>
+          <a href="https://www.blitzortung.org/en/contact.php" class="source-tag" target="_blank"
+            rel="noopener noreferrer">Blitzortung</a>
+          <a href="https://github.com/mptwaktusolat/jakim.geojson/" class="source-tag" target="_blank"
+            rel="noopener noreferrer">MapData</a>
         </div>
       </div>
 
@@ -75,7 +88,7 @@
             <summary>Will Level 3 radar data be available?</summary>
             <p>
               No. For more information regarding climate data availability, please refer to the
-              <a href="https://www.met.gov.my/en/info/soalan-lazim">
+              <a href="https://www.met.gov.my/en/info/soalan-lazim" target="_blank" rel="noopener noreferrer">
                 MET Malaysia FAQ
               </a>.
             </p>
@@ -110,16 +123,54 @@
         <p><strong>Disclaimer:</strong> Not an official service. Data comes from third-party open data and may be
           inaccurate or delayed. Do not use for safety-critical purposes.</p>
       </div>
-      <p class="developer">Developed by <a href="https://www.kerserver.org">Ker</a>.</p>
+      <p class="developer">Developed by <a href="https://www.kerserver.org" target="_blank"
+          rel="noopener noreferrer">Ker</a>.</p>
     </div>
   </div>
 
-  <!-- Changelog Modal -->
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-overlay hidden">
+    <div class="glass-panel modal-content settings-modal-content">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button id="close-settings" class="icon-btn" aria-label="Close Settings">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-group">
+          <h3>Windy API</h3>
+          <p class="settings-desc">Enter your Windy API key to enable Windy radar layers. Requires a Paid or Trial key
+            from <a href="https://api.windy.com" target="_blank">api.windy.com</a>.</p>
+          <div class="input-group">
+            <input type="password" id="windy-api-key" placeholder="Enter Windy API Key" class="settings-input">
+            <button id="save-windy-key" class="btn btn-primary">Save</button>
+          </div>
+          <div id="windy-status" class="status-msg"></div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Radar Source</h3>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="radar-source" value="rainviewer" checked>
+              <span>RainViewer (Free)</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="radar-source" value="windy">
+              <span>Windy (Requires Key)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="changelog-modal" class="modal-overlay hidden">
     <div class="glass-panel modal-content">
       <div class="modal-header">
         <h2>Changelog</h2>
-        <button id="close-changelog" class="icon-btn">
+        <button id="close-changelog" class="icon-btn" aria-label="Close Changelog">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
