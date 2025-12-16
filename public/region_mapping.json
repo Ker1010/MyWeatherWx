@@ -145,6 +145,19 @@
         "kenering",
         "lenggong"
     ],
+    "eastern-sabah": [
+        "kota-marudu",
+        "sandakan",
+        "pitas",
+        "kudat",
+        "beluran",
+        "tawau",
+        "kinabatangan",
+        "lahad-datu",
+        "kunak",
+        "semporna",
+        "kalabakan"
+    ],
     "sabah": [
         "kota-kinabalu",
         "sandakan",
@@ -286,5 +299,19 @@
     "sepang": [
         "sepang",
         "ft-putrajaya"
+    ],
+    "tawau":[
+        "tawau",
+        "kalabakan",
+        "lahad-datu",
+        "kunak",
+        "semporna"
+    ],
+    "sandakan":[
+        "sandakan",
+        "beluran",
+        "telupid",
+        "tongod",
+        "kinabatangan"
     ]
 }
