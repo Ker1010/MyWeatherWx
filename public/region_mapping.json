@@ -311,5 +311,30 @@
         "telupid",
         "tongod",
         "kinabatangan"
+    ],
+    "interior": [
+        "kuala-penyu",
+        "sipitang",
+        "beaufort",
+        "nabawan",
+        "tenom",
+        "keningau",
+        "tambunan"
+    ],
+    "west-coast": [
+        "penampang",
+        "putatan",
+        "papar",
+        "tuaran",
+        "ranau",
+        "kota-belud"
+    ],
+    "larut": [
+        "larut-dan-matang"
+    ],
+    "kudat": [
+        "kudat",
+        "kota-marudu",
+        "pitas"
     ]
 }
