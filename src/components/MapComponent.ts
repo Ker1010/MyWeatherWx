@@ -345,10 +345,10 @@ export class MapComponent {
                       heading
                     }</h3>
                     <p style="margin: 2px 0; font-size: 12px;"><strong>${validLabel}</strong> ${
-                      props.valid_from
+                      this.formatTime(props.valid_from)
                     }</p>
                     <p style="margin: 2px 0; font-size: 12px;"><strong>${untilLabel}</strong> ${
-                      props.valid_to
+                      this.formatTime(props.valid_to)
                     }</p>
                     <span class="grid grid-cols-2">
                         <span class="badge badge-primary">${issueLabel}${this.formatTimeAgo(props.valid_from)}</span>
@@ -398,6 +398,12 @@ export class MapComponent {
     this.map.on("mouseleave", "warnings-fill", () => {
       this.map.getCanvas().style.cursor = "";
     });
+  }
+
+  private formatTime(dateStr: string): string {
+    if (!dateStr) return "N/A";
+    const date = new Date(dateStr).toLocaleString();
+    return date;
   }
 
   private copyText(text: string) {
@@ -699,12 +705,8 @@ export class MapComponent {
         categoryStrokeWeights[
           warning.category || warning.warningType || "first"
         ] || 1;
-      const validFrom = warning.valid_from
-        ? new Date(warning.valid_from).toLocaleString()
-        : "N/A";
-      const validTo = warning.valid_to
-        ? new Date(warning.valid_to).toLocaleString()
-        : "Until further notice";
+      const validFrom = warning.valid_from || "N/A";
+      const validTo = warning.valid_to || "Until further notice";
 
       expandedLocations.forEach((location: string) => {
 

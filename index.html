@@ -175,44 +175,6 @@
     </div>
   </div>
 
-  <!-- Settings Modal -->
-  <div id="settings-modal" class="modal-overlay hidden">
-    <div class="glass-panel modal-content settings-modal-content">
-      <div class="modal-header">
-        <h2>Settings</h2>
-        <button id="close-settings" class="icon-btn" aria-label="Close Settings">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="settings-group">
-          <h3>Windy API</h3>
-          <p class="settings-desc">Enter your Windy API key to enable Windy radar layers. Requires a Paid or Trial key
-            from <a href="https://api.windy.com" target="_blank">api.windy.com</a>.</p>
-          <div class="input-group">
-            <input type="password" id="windy-api-key" placeholder="Enter Windy API Key" class="settings-input">
-            <button id="save-windy-key" class="btn btn-primary">Save</button>
-          </div>
-          <div id="windy-status" class="status-msg"></div>
-        </div>
-
-        <div class="settings-group">
-          <h3>Radar Source</h3>
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" name="radar-source" value="rainviewer" checked>
-              <span>RainViewer (Free)</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" name="radar-source" value="windy">
-              <span>Windy (Requires Key)</span>
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div id="changelog-modal" class="modal-overlay hidden">
     <div class="glass-panel modal-content">
       <div class="modal-header">
