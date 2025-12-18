@@ -5,6 +5,8 @@ import type { DecodedWarning } from "../services/WeatherWarning";
 import type { FilterState } from "./WarningFilter";
 import type { LightningStrike } from "../services/LightningService";
 import { LightningService } from "../services/LightningService";
+import { LanguageService } from "../services/LanguageService";
+import type { Language } from "../services/LanguageService";
 
 export class MapComponent {
   private userLocationMarker?: maplibregl.Marker;
@@ -14,6 +16,14 @@ export class MapComponent {
   private geojsonFeatures: any[] = [];
   private allWarnings: DecodedWarning[] = [];
   private lightningService: LightningService;
+  private currentLanguage: Language = 'en';
+  
+  // Drawing State
+  private isDrawingMode = false;
+  private isDrawing = false;
+  private drawnFeatures: any[] = [];
+  private currentDrawingFeature: any = null;
+
   private currentFilter: FilterState = {
     categories: new Set([
       "first",
@@ -119,16 +129,47 @@ export class MapComponent {
       window.matchMedia("(max-width: 768px)").matches ||
       /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     this.containerId = containerId;
+
+    // Load saved view
+    const savedView = localStorage.getItem('weather_map_view');
+    let center: [number, number] = [109.45, 4.11];
+    let zoom = isMobile ? 3.5 : 5.5;
+
+    if (savedView) {
+        try {
+            const parsed = JSON.parse(savedView);
+            if (parsed.center && parsed.zoom) {
+                center = parsed.center;
+                zoom = parsed.zoom;
+            }
+        } catch (e) {
+            console.error("Failed to parse saved map view", e);
+        }
+    }
+
     this.map = new maplibregl.Map({
       container: this.containerId,
       style: MapComponent.BASE_MAP_STYLE,
-      center: [109.45, 4.11],
+      center: center,
       maxZoom: 8,
-      zoom: isMobile ? 3.5 : 5.5,
+      zoom: zoom,
       attributionControl: false,
     });
+
+    this.map.on('moveend', () => {
+        const center = this.map.getCenter();
+        const zoom = this.map.getZoom();
+        localStorage.setItem('weather_map_view', JSON.stringify({
+            center: [center.lng, center.lat],
+            zoom: zoom
+        }));
+    });
+
     this.lightningService = new LightningService();
     this.lightningService.connect();
+    
+    // Initial language
+    this.currentLanguage = LanguageService.getInstance().getLanguage();
   }
 
   public onLoad(callback: () => void) {
@@ -244,6 +285,39 @@ export class MapComponent {
       });
     }
 
+    // Initialize Drawing Source/Layer
+    if (!this.map.getSource("drawn-source")) {
+        this.map.addSource("drawn-source", {
+            type: "geojson",
+            data: {
+                type: "FeatureCollection",
+                features: []
+            }
+        });
+
+        this.map.addLayer({
+            id: "drawn-lines",
+            type: "line",
+            source: "drawn-source",
+            layout: {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            paint: {
+                "line-color": "#ff0",
+                "line-width": 3
+            }
+        });
+    }
+    
+    // Bind drawing events
+    this.map.on('mousedown', this.onMouseDown.bind(this));
+    this.map.on('mousemove', this.onMouseMove.bind(this));
+    this.map.on('mouseup', this.onMouseUp.bind(this));
+    this.map.on('touchstart', (e) => this.onMouseDown({ ...e, lngLat: e.lngLat } as any)); // Basic touch support conversion
+    this.map.on('touchmove', (e) => this.onMouseMove({ ...e, lngLat: e.lngLat } as any));
+    this.map.on('touchend', this.onMouseUp.bind(this));
+
     // Interaction for warnings
     this.map.on("click", "warnings-fill", (e) => {
       if (!e.features || !e.features.length) return;
@@ -253,25 +327,43 @@ export class MapComponent {
       if (!props) return;
 
       const color = props.color;
+      const isBm = this.currentLanguage === 'bm';
+      
+      const heading = isBm ? props.heading_bm : props.heading_en;
+      const text = isBm ? props.text_bm : props.text_en;
+      const instruction = isBm ? props.instruction_bm : props.instruction_en;
+      const issueLabel = isBm ? "Dikeluarkan: " : "Issue: ";
+      const expireLabel = isBm ? "Tamat: " : "Expires: ";
+      const copyTextLabel = isBm ? "Salin Teks" : "Copy Text";
+      const validLabel = isBm ? "Sah Mulai:" : "Valid:";
+      const untilLabel = isBm ? "Sehingga:" : "Until:";
+
 
       const popupContent = `
-                <div style="color: #333; font-family: sans-serif;">
+                <div class="glass-panel p-2" style="font-family: sans-serif;">
                     <h3 style="margin: 0 0 8px 0; font-size: 16px; border-bottom: 2px solid ${color}; padding-bottom: 4px;">${
-        props.heading_en
-      }</h3>
-                    <p style="margin: 4px 0; font-size: 12px; color: #666;"><strong>Valid:</strong> ${
+                      heading
+                    }</h3>
+                    <p style="margin: 2px 0; font-size: 12px;"><strong>${validLabel}</strong> ${
                       props.valid_from
                     }</p>
-                    <p style="margin: 4px 0; font-size: 12px; color: #666;"><strong>Until:</strong> ${
+                    <p style="margin: 2px 0; font-size: 12px;"><strong>${untilLabel}</strong> ${
                       props.valid_to
                     }</p>
+                    <span class="grid grid-cols-2">
+                        <span class="badge badge-primary">${issueLabel}${this.formatTimeAgo(props.valid_from)}</span>
+                        <span class="badge badge-primary">${expireLabel}${this.formatTimeAgo(props.valid_to)}</span>
+                        <span class="badge badge-secondary copy-btn">
+                            <i class="bi bi-copy"></i> ${copyTextLabel}
+                        </span>
+                    </span>
                     <hr>
                     <p style="margin: 8px 0; font-size: 13px;">${
-                      props.text_en
+                      text
                     }</p>
                     ${
-                      props.instruction_en
-                        ? `<p style="margin: 8px 0; font-style: italic; font-size: 12px; color: #555;">${props.instruction_en}</p>`
+                      instruction
+                        ? `<p style="margin: 8px 0; font-style: italic; font-size: 12px; color: #555;">${instruction}</p>`
                         : ""
                     }
                 </div>
@@ -285,6 +377,19 @@ export class MapComponent {
         .setLngLat(e.lngLat)
         .setHTML(popupContent)
         .addTo(this.map);
+
+        setTimeout(() => {
+        const btn = document.querySelector(".warning-popup .copy-btn");
+        if (btn) {
+          btn.addEventListener("click", () => {
+            this.copyText(text);
+            btn.classList.add("copied");
+            setTimeout(() => {
+              btn.classList.remove("copied");
+            }, 500);
+          });
+        }
+      }, 0);
     });
 
     this.map.on("mouseenter", "warnings-fill", () => {
@@ -293,6 +398,10 @@ export class MapComponent {
     this.map.on("mouseleave", "warnings-fill", () => {
       this.map.getCanvas().style.cursor = "";
     });
+  }
+
+  private copyText(text: string) {
+    navigator.clipboard.writeText(text);
   }
 
   private startLightningAnimation() {
@@ -355,6 +464,7 @@ export class MapComponent {
         }
 
         const el = document.createElement("div");
+        el.className = "user-location-marker";
         el.style.width = "20px";
         el.style.height = "20px";
         el.style.borderRadius = "50%";
@@ -385,6 +495,12 @@ export class MapComponent {
     }
   }
 
+  private latestRadarTimestamp: number = 0;
+
+  public setLatestRadarTimestamp(timestamp: number) {
+    this.latestRadarTimestamp = timestamp;
+  }
+
   public addRainViewerLayer(timestamp: number) {
     if (this.map.getSource("rainviewer")) return;
 
@@ -393,9 +509,7 @@ export class MapComponent {
       tiles: [
         `https://tilecache.rainviewer.com/v2/radar/${timestamp}/256/{z}/{x}/{y}/2/1_1.png`,
       ],
-      tileSize: 256,
-      attribution:
-        '&copy; <a href="https://www.rainviewer.com/api.html" target="_blank">RainViewer</a>',
+      tileSize: 256
     });
 
     const beforeLayer = this.map.getLayer("malaysia-outline")
@@ -426,11 +540,55 @@ export class MapComponent {
       "visibility",
       visible ? "visible" : "none"
     );
-    this.map.setLayoutProperty(
-      "lightning-layer",
-      "visibility",
-      visible ? "visible" : "none"
-    );
+    // Lightning also toggles with rain layout per previous request
+    if (this.map.getLayer("lightning-layer")) {
+        this.map.setLayoutProperty(
+            "lightning-layer",
+            "visibility",
+            visible ? "visible" : "none"
+        );
+    }
+  }
+
+  private updateRainViewerLayer(timestamp: number) {
+    const layerId = "rainviewer-radar";
+    const sourceId = "rainviewer";
+    
+    let wasVisible = true;
+
+    if (this.map.getSource(sourceId)) {
+       if (this.map.getLayer(layerId)) {
+         // Check if it was visible
+         const visibility = this.map.getLayoutProperty(layerId, "visibility");
+         wasVisible = visibility !== "none";
+         this.map.removeLayer(layerId);
+       }
+       this.map.removeSource(sourceId);
+    }
+
+    // "if playback is time is faster then now then show the last one own data"
+    // Use the latest known past timestamp if we are in the future
+    const safeTimestamp = (this.latestRadarTimestamp && timestamp > this.latestRadarTimestamp) 
+        ? this.latestRadarTimestamp 
+        : timestamp;
+
+    this.addRainViewerLayer(safeTimestamp);
+    
+    // Restore visibility
+    if (!wasVisible) {
+        this.map.setLayoutProperty(layerId, "visibility", "none");
+    }
+  }
+
+  private currentDisplayTime: number = Date.now();
+
+  public setDisplayTime(timestamp: number) {
+    // For warnings, if time is future, just show current (cap at Date.now())
+    this.currentDisplayTime = Math.min(timestamp * 1000, Date.now());
+    
+    // For radar, allow future timestamps (Nowcast)
+    this.updateRainViewerLayer(timestamp);
+    this.renderWarnings();
   }
 
   public setFilter(filter: FilterState) {
@@ -438,16 +596,48 @@ export class MapComponent {
     this.renderWarnings();
   }
 
+  public setLanguage(lang: Language) {
+      if (this.currentLanguage === lang) return;
+      this.currentLanguage = lang;
+      this.renderWarnings();
+  }
+
   public highlightWarningAreas(warnings: DecodedWarning[]) {
     this.allWarnings = warnings;
     this.renderWarnings();
   }
 
+  private formatTimeAgo(dateStr: string): string {
+    const now = this.currentDisplayTime;
+    const target = new Date(dateStr).getTime();
+    const diffMs = Math.abs(now - target);
+    const isFuture = target > now;
+    
+    const minutes = Math.floor(diffMs / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    if (minutes < 1) return isFuture ? "in a moment" : "just now";
+    
+    if (minutes < 60) return isFuture 
+        ? `in ${minutes} minute${minutes > 1 ? "s" : ""}` 
+        : `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    if (hours < 24) return isFuture 
+        ? `in ${hours} hour${hours > 1 ? "s" : ""}` 
+        : `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    return isFuture 
+        ? `in ${days} day${days > 1 ? "s" : ""}` 
+        : `${days} day${days > 1 ? "s" : ""} ago`;
+}
+
+
   private renderWarnings() {
     const source = this.map.getSource("warnings-source") as GeoJSONSource;
     if (!source) return;
 
-    const now = new Date();
+    if (!source) return;
+
+    const now = new Date(this.currentDisplayTime);
     const categoryColors: Record<string, string> = {
       first: "#FFEB3B",
       second: "#FF9800",
@@ -541,11 +731,15 @@ export class MapComponent {
               ...feature.properties,
               color,
               strokeWeight,
+              issue: warning.warning_issue.issued,
               heading_en: warning.heading_en,
+              heading_bm: warning.heading_bm,
               valid_from: validFrom,
               valid_to: validTo,
               text_en: warning.text_en,
+              text_bm: warning.text_bm,
               instruction_en: warning.instruction_en || "",
+              instruction_bm: warning.instruction_bm || "",
             },
           });
         });
@@ -556,5 +750,222 @@ export class MapComponent {
       type: "FeatureCollection",
       features: featuresToRender,
     });
+  }
+
+  // --- Forecast Logic ---
+
+  public renderForecast(forecasts: any[]) { // Using any[] to avoid circular dependency if I don't import ForecastData type yet
+    let source = this.map.getSource("forecast-source") as GeoJSONSource;
+    
+    // Initialize if not exists
+    if (!source) {
+       this.map.addSource("forecast-source", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      });
+
+      this.map.addLayer(
+        {
+          id: "forecast-fill",
+          type: "fill",
+          source: "forecast-source",
+          paint: {
+            "fill-color": ["get", "color"],
+            "fill-opacity": 0.6,
+          },
+        },
+        "malaysia-outline-detailed" // Place below detailed outline
+      );
+      
+      this.map.addLayer(
+        {
+            id: "forecast-labels",
+            type: "symbol",
+            source: "forecast-source",
+            minzoom: 6,
+            layout: {
+                "text-field": ["get", "forecast_short"],
+                "text-size": 10,
+                "text-offset": [0, 1.5],
+                "text-anchor": "top"
+            },
+            paint: {
+                "text-color": "#ffffff",
+                "text-halo-color": "#000000",
+                "text-halo-width": 1
+            }
+        }
+      );
+
+      // Add click handler for details
+      this.map.on("click", "forecast-fill", (e) => {
+         if (!e.features || !e.features.length) return;
+         const props = e.features[0].properties;
+         if (!props) return;
+         
+         const popupContent = `
+            <div class="glass-panel p-2" style="font-family: sans-serif; min-width: 200px;">
+                <h4 style="margin: 0 0 5px 0;">${props.location_name}</h4>
+                <div style="font-size: 14px; margin-bottom: 5px;">
+                    <span style="font-weight: bold; color: ${props.color}">${props.summary_forecast}</span>
+                </div>
+                <div style="font-size: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                    <div>Morning: <br> ${props.morning}</div>
+                    <div>Afternoon: <br> ${props.afternoon}</div>
+                    <div>Night: <br> ${props.night}</div>
+                    <div>Temp: <br> ${props.min_temp}°C - ${props.max_temp}°C</div>
+                </div>
+            </div>
+         `;
+         
+         new maplibregl.Popup({ closeButton: true, className: "forecast-popup" })
+            .setLngLat(e.lngLat)
+            .setHTML(popupContent)
+            .addTo(this.map);
+      });
+      
+      source = this.map.getSource("forecast-source") as GeoJSONSource;
+    }
+
+    const colorMap: Record<string, string> = {
+        "tiada hujan": "#8BC34A", // Green (Good/Fair)
+        "mendung": "#9E9E9E", // Gray
+        "hujan": "#4CAF50", // Green
+        "hujan di beberapa tempat": "#66BB6A", 
+        "hujan di kebanyakan tempat": "#2E7D32", // Darker Green
+        "hujan menyeluruh": "#1B5E20", // Very Dark Green
+        "ribut petir": "#FFC107", // Amber
+        "ribut petir di beberapa tempat": "#FF9800", // Orange
+        "ribut petir di kebanyakan tempat": "#F44336", // Red
+        "ribut petir menyeluruh": "#B71C1C" // Dark Red
+    };
+    
+    // Helper to find color based on fuzzy match
+    const getColor = (summary: string) => {
+        const lower = summary.toLowerCase();
+        if (lower.includes("ribut petir")) {
+            if (lower.includes("kebanyakan")) return colorMap["ribut petir di kebanyakan tempat"];
+            return colorMap["ribut petir di beberapa tempat"];
+        }
+        if (lower.includes("hujan")) {
+             if (lower.includes("kebanyakan")) return colorMap["hujan di kebanyakan tempat"];
+             if (lower.includes("menyeluruh")) return colorMap["hujan menyeluruh"];
+             return colorMap["hujan di beberapa tempat"];
+        }
+        if (lower.includes("mendung")) return colorMap["mendung"];
+        return colorMap["tiada hujan"];
+    };
+
+    const featuresToRender: any[] = [];
+    
+    forecasts.forEach(forecast => {
+        const cleanName = forecast.location.location_name.toLowerCase().replace(/\s+/g, "-");
+        
+        // Find matching features in geojsonFeatures
+        // This relies on map.on('load') having populated geojsonFeatures
+        const matchedFeatures = this.geojsonFeatures.filter((feature) => {
+           const featureName = (feature.properties?.name || "").toLowerCase().replace(/\s+/g, "-");
+           const featureId = (feature.id || "").toLowerCase().replace(/\s+/g, "-");
+           
+           // Direct match or partial match if needed (districts often match 1:1)
+           return featureName === cleanName || featureId === cleanName;
+        });
+        
+        const color = getColor(forecast.summary_forecast);
+        
+        matchedFeatures.forEach(feature => {
+            featuresToRender.push({
+                type: "Feature",
+                geometry: feature.geometry,
+                properties: {
+                    ...feature.properties,
+                    location_name: forecast.location.location_name,
+                    summary_forecast: forecast.summary_forecast,
+                    morning: forecast.morning_forecast,
+                    afternoon: forecast.afternoon_forecast,
+                    night: forecast.night_forecast,
+                    min_temp: forecast.min_temp,
+                    max_temp: forecast.max_temp,
+                    forecast_short: forecast.summary_forecast.replace("Hujan", "Rain").replace("Ribut petir", "Storm").replace("Tiada hujan", "").replace(" di beberapa tempat", "").replace(" di kebanyakan tempat", ""),
+                    color: color
+                }
+            });
+        });
+    });
+
+    if (source) {
+        source.setData({
+            type: "FeatureCollection",
+            features: featuresToRender
+        });
+    }
+  }
+
+  // --- Drawing Logic ---
+
+  public toggleDrawingMode(enabled: boolean) {
+      this.isDrawingMode = enabled;
+      this.map.getCanvas().style.cursor = enabled ? 'crosshair' : '';
+      
+      // Disable map drag pan if we want to ensure drawing doesn't drag map, 
+      // BUT for "pan-like" drawing, maybe we want to hold shift? 
+      // User said "draw on map like a pan" -> likely meant "pen".
+      // We will disable dragPan only while actively drawing (mousedown), 
+      // but let's disable standard interactions if in drawing mode to be safe/clear?
+      if (enabled) {
+          this.map.dragPan.disable();
+      } else {
+          this.map.dragPan.enable();
+          this.isDrawing = false;
+          this.currentDrawingFeature = null;
+      }
+  }
+
+  private onMouseDown(e: any) {
+      if (!this.isDrawingMode) return;
+
+      this.isDrawing = true;
+      this.currentDrawingFeature = {
+          type: "Feature",
+          geometry: {
+              type: "LineString",
+              coordinates: [[e.lngLat.lng, e.lngLat.lat]]
+          },
+          properties: {}
+      };
+      
+      this.drawnFeatures.push(this.currentDrawingFeature);
+      this.updateDrawnSource();
+  }
+
+  private onMouseMove(e: any) {
+      if (!this.isDrawingMode || !this.isDrawing || !this.currentDrawingFeature) return;
+
+      this.currentDrawingFeature.geometry.coordinates.push([e.lngLat.lng, e.lngLat.lat]);
+      this.updateDrawnSource();
+  }
+
+  private onMouseUp() {
+      if (!this.isDrawingMode) return;
+      this.isDrawing = false;
+      this.currentDrawingFeature = null;
+  }
+
+  public clearDrawings() {
+      this.drawnFeatures = [];
+      this.updateDrawnSource();
+  }
+
+  private updateDrawnSource() {
+      const source = this.map.getSource("drawn-source") as GeoJSONSource;
+      if (source) {
+          source.setData({
+              type: "FeatureCollection",
+              features: this.drawnFeatures
+          });
+      }
   }
 }

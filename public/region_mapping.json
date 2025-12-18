@@ -226,7 +226,7 @@
         "telang-usan",
         "limbang",
         "lawas",
-        "maradong"
+        "meradong"
     ],
     "wp-labuan": [
         "labuan"
@@ -266,18 +266,18 @@
     ],
     "sri-aman": [
         "sri-aman",
-        "lubok-antu",
-        "saratok",
-        "kabong"
+        "lubok-antu"
     ],
     "sarikei": [
         "sarikei",
-        "maradong",
+        "meradong",
         "julau",
         "pakan"
     ],
     "betong": [
         "betong",
+        "saratok",
+        "kabong",
         "pusa"
     ],
     "samarahan": [
@@ -327,7 +327,8 @@
         "papar",
         "tuaran",
         "ranau",
-        "kota-belud"
+        "kota-belud",
+        "kota-kinabalu"
     ],
     "larut": [
         "larut-dan-matang"

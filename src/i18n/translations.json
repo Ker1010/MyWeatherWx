@@ -1,0 +1,182 @@
+{
+    "settings": {
+        "en": "Settings",
+        "bm": "Tetapan"
+    },
+    "filter": {
+        "en": "Filter",
+        "bm": "Penapis"
+    },
+    "control_panel": {
+        "en": "Control Panel",
+        "bm": "Panel Kawalan"
+    },
+    "ui_settings": {
+        "en": "UI Settings",
+        "bm": "Tetapan UI"
+    },
+    "show_playback_controls": {
+        "en": "Show Playback Controls",
+        "bm": "Tunjukkan Kawalan Main semula"
+    },
+    "storage": {
+        "en": "Storage",
+        "bm": "Penyimpanan"
+    },
+    "clear_data": {
+        "en": "Clear Data",
+        "bm": "Kosongkan Data"
+    },
+    "view_raw_data": {
+        "en": "View Raw Data",
+        "bm": "Lihat Data Mentah"
+    },
+    "actions": {
+        "en": "Actions",
+        "bm": "Tindakan"
+    },
+    "categories": {
+        "en": "Categories",
+        "bm": "Kategori"
+    },
+    "language": {
+        "en": "Language",
+        "bm": "Bahasa"
+    },
+    "first_category": {
+        "en": "First Category (Strong Wind/Rough Sea)",
+        "bm": "Kategori Pertama (Angin Kencang/Laut Bergelora)"
+    },
+    "second_category": {
+        "en": "Second Category (Strong Wind/Rough Sea)",
+        "bm": "Kategori Kedua (Angin Kencang/Laut Bergelora)"
+    },
+    "third_category": {
+        "en": "Third Category (Strong Wind/Rough Sea)",
+        "bm": "Kategori Ketiga (Angin Kencang/Laut Bergelora)"
+    },
+    "thunderstorm": {
+        "en": "Thunderstorm",
+        "bm": "Ribut Petir"
+    },
+    "thunderstorm_warning": {
+        "en": "Warning",
+        "bm": "Amaran"
+    },
+    "thunderstorm_watch": {
+        "en": "Watch",
+        "bm": "Pewaspadaan"
+    },
+    "continuous_rain": {
+        "en": "Continuous Rain",
+        "bm": "Hujan Berterusan"
+    },
+    "sea_level_rise": {
+        "en": "Sea Level Rise",
+        "bm": "Kenaikan Paras Air Laut"
+    },
+    "tropical_cyclone": {
+        "en": "Tropical Cyclone",
+        "bm": "Siklon Tropika"
+    },
+    "now": {
+        "en": "Now",
+        "bm": "Sekarang"
+    },
+    "alert": {
+        "en": "Alert",
+        "bm": "Waspada"
+    },
+    "confirm_clear_data": {
+        "en": "Are you sure you want to clear all local data? This action cannot be undone.",
+        "bm": "Adakah anda pasti mahu mengosongkan semua data tempatan? Tindakan ini tidak boleh dibuat asal."
+    },
+    "raw_data_header": {
+        "en": "Raw Warning Data",
+        "bm": "Data Amaran Mentah"
+    },
+    "no_warnings_data": {
+        "en": "No warnings data available.",
+        "bm": "Tiada data amaran tersedia."
+    },
+    "locations": {
+        "en": "Locations",
+        "bm": "Lokasi"
+    },
+    "from": {
+        "en": "From",
+        "bm": "Dari"
+    },
+    "until": {
+        "en": "Until",
+        "bm": "Sehingga"
+    },
+    "app_description": {
+        "en": "High-precision weather radar & warning system for Malaysia.",
+        "bm": "Sistem radar cuaca & amaran berketepatan tinggi untuk Malaysia."
+    },
+    "data_sources": {
+        "en": "Data Sources",
+        "bm": "Sumber Data"
+    },
+    "faq_title_level3": {
+        "en": "Will Level 3 radar data be available?",
+        "bm": "Adakah data radar Tahap 3 akan tersedia?"
+    },
+    "faq_tldr_level3": {
+        "en": "No. For more information regarding climate data availability, please refer to the",
+        "bm": "Tidak. Untuk maklumat lanjut mengenai ketersediaan data iklim, sila rujuk"
+    },
+    "faq_title_mappings": {
+        "en": "Why are some mappings missing?",
+        "bm": "Mengapa sesetengah pemetaan hilang?"
+    },
+    "faq_text_mappings": {
+        "en": "Government data is text-only. We manually map regions based on descriptions, which can cause slight mismatches with official boundaries.",
+        "bm": "Data kerajaan adalah teks sahaja. Kami memetakan kawasan secara manual berdasarkan penerangan, yang mungkin menyebabkan sedikit ketidakpadanan dengan sempadan rasmi."
+    },
+    "faq_title_rainviewer": {
+        "en": "Why use RainViewer instead of Windy?",
+        "bm": "Mengapa menggunakan RainViewer dan bukan Windy?"
+    },
+    "faq_text_rainviewer": {
+        "en": "RainViewer provides a free API for radar data, whereas Windy does not support the specific map overlays we need. More MET Malaysia information on data in a future update.",
+        "bm": "RainViewer menyediakan API percuma untuk data radar, manakala Windy tidak menyokong lapisan peta khusus yang kami perlukan. Maklumat lanjut mengenai data MET Malaysia dalam kemas kini akan datang."
+    },
+    "disclaimer_title": {
+        "en": "Disclaimer:",
+        "bm": "Penafian:"
+    },
+    "disclaimer_text": {
+        "en": "Not an official service. Data comes from third-party open data and may be inaccurate or delayed. Do not use for safety-critical purposes.",
+        "bm": "Bukan perkhidmatan rasmi. Data berasal dari sumber terbuka pihak ketiga dan mungkin tidak tepat atau tertunda. Jangan gunakan untuk tujuan kritikal keselamatan."
+    },
+    "developed_by": {
+        "en": "Developed by",
+        "bm": "Dibangunkan oleh"
+    },
+    "notifications": {
+        "en": "Notifications",
+        "bm": "Pemberitahuan"
+    },
+    "enable_notifications": {
+        "en": "Enable Thunderstorm Notifications",
+        "bm": "Dayakan Pemberitahuan Ribut Petir"
+    },
+    "select_state": {
+        "en": "Select State",
+        "bm": "Pilih Negeri"
+    },
+    "notification_permission_denied": {
+        "en": "Notification permission denied. Please enable them in your browser settings.",
+        "bm": "Kebenaran pemberitahuan ditolak. Sila dayakan dalam tetapan penyemak imbas anda."
+    },
+    "select_district": {
+        "en": "Select District",
+        "bm": "Pilih Daerah"
+    },
+    "all_state": {
+        "en": "All",
+        "bm": "Semua"
+    }
+}

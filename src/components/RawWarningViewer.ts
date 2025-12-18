@@ -1,4 +1,5 @@
 import type { DecodedWarning } from '../services/WeatherWarning';
+import { LanguageService } from '../services/LanguageService';
 
 export class RawWarningViewer {
     private container: HTMLElement;
@@ -21,40 +22,65 @@ export class RawWarningViewer {
                 this.hide();
             }
         });
+
+        // Re-render on language change if visible
+        LanguageService.getInstance().subscribe(() => {
+             if (this.container.style.display !== 'none') {
+                 // We don't have the warnings data here easily unless we store it.
+                 // For now, next time it opens it will be correct. 
+                 // Or we could store the last warnings.
+                 // Let's store last warnings.
+             }
+        });
     }
 
+
+
     public show(warnings: DecodedWarning[]) {
-        console.log('Displaying raw warnings:', warnings);
+
         this.render(warnings);
         this.container.style.display = 'flex';
     }
 
     public hide() {
-        this.container.style.display = 'none';
+        this.container.classList.add('closing');
+
+        this.container.addEventListener('animationend', () => {
+            this.container.style.display = 'none';
+            this.container.classList.remove('closing');
+        }, { once: true });
     }
 
     private render(warnings: DecodedWarning[]) {
+        const t = (key: string) => LanguageService.getInstance().translate(key);
+        const lang = LanguageService.getInstance().getLanguage();
+        const isBm = lang === 'bm';
+
         if (!warnings || warnings.length === 0) {
-            this.content.innerHTML = '<div class="no-warnings">No warnings data available.</div>';
+            this.content.innerHTML = `<div class="no-warnings">${t('no_warnings_data')}</div>`;
             return;
         }
 
         const itemsHtml = warnings.map(warning => `
             <div class="warning-item">
                 <div class="warning-header" style="border-left: 4px solid ${this.getCategoryColor(warning.category)}">
-                    <h4>${warning.formattedTitle}</h4>
+                    <h4>${isBm ? warning.heading_bm : warning.heading_en}</h4>
                     <span class="warning-time">
                         ${this.formatTimeRange(warning.valid_from, warning.valid_to)}
                     </span>
                 </div>
                 <div class="warning-body">
-                    <p>${warning.text_en}</p>
-                    ${warning.instruction_en ? `<p class="instruction"><em>${warning.instruction_en}</em></p>` : ''}
+                    <p>${isBm ? warning.text_bm : warning.text_en}</p>
+                    ${
+                        (isBm ? warning.instruction_bm : warning.instruction_en) 
+                        ? `<p class="instruction"><em>${isBm ? warning.instruction_bm : warning.instruction_en}</em></p>` 
+                        : ''
+                    }
                     <div class="warning-meta">
                         <span class="badge category">${warning.category || 'N/A'}</span>
                         <span class="badge type">${warning.warningType || 'N/A'}</span>
                         <span class="locations">
-                            Locations: ${warning.locations.map(([loc]) => loc).join(', ')}
+                            ${t('locations')}: ${warning.locations.map(([loc]) => loc).join(', ')}
                         </span>
                     </div>
                 </div>
@@ -63,12 +89,12 @@ export class RawWarningViewer {
 
         this.content.innerHTML = `
             <div class="raw-warning-header">
-                <h2>Raw Warning Data (${warnings.length})</h2>
+                <h2>${t('raw_data_header')} (${warnings.length})</h2>
                 <button class="close-btn" id="close-raw-view"><i class="bi bi-x-lg"></i></button>
             </div>
             <div class="raw-warning-list">
                 ${itemsHtml}
-            </div>
+            </div>  
         `;
 
         this.content.querySelector('#close-raw-view')?.addEventListener('click', () => this.hide());
@@ -90,14 +116,15 @@ export class RawWarningViewer {
     }
 
     private formatTimeRange(from?: string, to?: string): string {
+        const t = (key: string) => LanguageService.getInstance().translate(key);
         if (!from && !to) return '';
         
         const fromStr = from ? new Date(from).toLocaleString() : '';
         const toStr = to ? new Date(to).toLocaleString() : '';
 
         if (from && to) return `${fromStr} - ${toStr}`;
-        if (from) return `From ${fromStr}`;
-        if (to) return `Until ${toStr}`;
+        if (from) return `${t('from')} ${fromStr}`;
+        if (to) return `${t('until')} ${toStr}`;
         return '';
     }
 }

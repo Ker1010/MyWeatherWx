@@ -65,6 +65,22 @@
 <body>
   <div id="map"></div>
 
+  <!-- Playback Control -->
+  <div class="playback-control glass-panel">
+    <div class="playback-header">
+      <button id="play-pause-btn" class="icon-btn" aria-label="Play/Pause">
+        <i class="bi bi-play-fill"></i>
+      </button>
+      <span id="playback-time">Loading...</span>
+    </div>
+    <input type="range" id="playback-slider" min="0" max="100" value="100" class="playback-slider" disabled>
+    <button id="now-btn" class="badge badge-primary"
+      style="border: none; cursor: pointer; font-size: 10px;">Now</button>
+    <button id="draw-btn" class="draw-btn icon-btn" aria-label="Draw" title="Toggle Drawing (Pen)">
+      <i class="bi bi-pen-fill"></i>
+    </button>
+  </div>
+
   <!-- Location Button -->
   <button id="location-btn" class="glass-panel location-btn" title="Show My Location" aria-label="Show My Location">
     <i class="bi bi-crosshair"></i>
@@ -112,11 +128,13 @@
           <details>
             <summary>Will Level 3 radar data be available?</summary>
             <p>
-              No. For more information regarding climate data availability, please refer to the
-              <a href="https://www.met.gov.my/en/info/soalan-lazim" target="_blank" rel="noopener noreferrer">
-                MET Malaysia FAQ
-              </a>.
-            </p>
+                <span>
+                  No. For more information regarding climate data availability, please refer to the
+                </span>
+                <a href="https://www.met.gov.my/en/info/soalan-lazim" target="_blank" rel="noopener noreferrer">
+                  MET Malaysia FAQ</a>.
+              </p>
+            </span>
           </details>
         </div>
 
@@ -148,8 +166,12 @@
         <p><strong>Disclaimer:</strong> Not an official service. Data comes from third-party open data and may be
           inaccurate or delayed. Do not use for safety-critical purposes.</p>
       </div>
-      <p class="developer">Developed by <a href="https://www.kerserver.org" target="_blank"
+      <div class="d-flex justify-content-between">
+        <p class="developer">Developed by <a href="https://www.kerserver.org" target="_blank"
           rel="noopener noreferrer">Ker</a>.</p>
+          <p class="developer"><a style="text-decoration: none;" href="https://discord.gg/vbvgaxWRZ2" target="_blank"
+            rel="noopener noreferrer"><i class="bi bi-discord"></i> Discord Server</a></p>
+          </div>
     </div>
   </div>
 
@@ -201,6 +223,25 @@
       </div>
       <div class="modal-body" id="changelog-list">
         <!-- Changelog items will be injected here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="confirm-modal" class="modal-overlay hidden">
+    <div class="glass-panel modal-content confirm-modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2>Confirm Action</h2>
+        <button class="icon-btn close-confirm" aria-label="Close">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-message">Are you sure you want to proceed?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost close-confirm">Cancel</button>
+        <button id="confirm-proceed-btn" class="btn btn-danger">Confirm</button>
       </div>
     </div>
   </div>

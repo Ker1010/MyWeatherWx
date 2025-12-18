@@ -6,6 +6,23 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: 'v1.0',
+    date: '2025-12-18',
+    changes: [
+      'Redesign Control Panel',
+      'Redesign Warning Popup',
+      'PWA notification',
+      'Some Animations improvements',
+      'Added Default active warnings',
+      'Translate Language (English/Bahasa Melayu)',
+      'Draw function',
+      'More area coverage',
+      'Playback function',
+      'Reload RainViewer Data every 3 minutes',
+      'Discord server ready!',
+    ]
+  },
+  {
     version: 'v0.8 Beta',
     date: '2025-12-16',
     changes: [
