@@ -6,6 +6,14 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: 'v1.1',
+    date: '2025-12-21',
+    changes: [
+      'Add Snowfall (happy holiday)',
+      'More area coverage',
+    ]
+  },
+  {
     version: 'v1.0',
     date: '2025-12-18',
     changes: [

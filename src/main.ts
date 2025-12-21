@@ -7,6 +7,7 @@ import { WeatherWarningService, WeatherWarningDecoder } from './services/Weather
 import { changelogData } from './utils/changelog';
 import { LanguageService } from './services/LanguageService';
 import { NotificationService } from './services/NotificationService';
+import { Snowfall } from './utils/Snowfall';
 
 const mapComponent = new MapComponent('map');
 const rawWarningViewer = new RawWarningViewer();
@@ -36,8 +37,23 @@ new WarningFilter(
 const aboutToggle = document.getElementById('about-toggle');
 const aboutPanel = document.querySelector('.about-panel');
 
+// Initialize Snowfall
+const snowfall = new Snowfall();
+const isDecember = new Date().getMonth() === 11;
+
 aboutToggle?.addEventListener('click', () => {
     aboutPanel?.classList.toggle('collapsed');
+    
+    // Check if panel is currently open (not collapsed)
+    const isOpen = !aboutPanel?.classList.contains('collapsed');
+    
+    if (isDecember) {
+        if (isOpen) {
+            snowfall.start();
+        } else {
+            snowfall.stop();
+        }
+    }
 });
 
 function updateAboutPanel() {
