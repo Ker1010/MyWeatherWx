@@ -1,182 +1,387 @@
 {
     "settings": {
         "en": "Settings",
-        "bm": "Tetapan"
+        "bm": "Tetapan",
+        "cn": "设置"
     },
     "filter": {
         "en": "Filter",
-        "bm": "Penapis"
+        "bm": "Penapis",
+        "cn": "筛选"
     },
     "control_panel": {
         "en": "Control Panel",
-        "bm": "Panel Kawalan"
+        "bm": "Panel Kawalan",
+        "cn": "控制面板"
     },
     "ui_settings": {
         "en": "UI Settings",
-        "bm": "Tetapan UI"
+        "bm": "Tetapan UI",
+        "cn": "界面设置"
     },
     "show_playback_controls": {
         "en": "Show Playback Controls",
-        "bm": "Tunjukkan Kawalan Main semula"
+        "bm": "Tunjukkan Kawalan Main semula",
+        "cn": "显示播放控件"
     },
     "storage": {
         "en": "Storage",
-        "bm": "Penyimpanan"
+        "bm": "Penyimpanan",
+        "cn": "存储"
+    },
+    "radar_color": {
+        "en": "Radar Color",
+        "bm": "Warna Radar",
+        "cn": "雷达颜色"
     },
     "clear_data": {
         "en": "Clear Data",
-        "bm": "Kosongkan Data"
+        "bm": "Kosongkan Data",
+        "cn": "清除数据"
     },
     "view_raw_data": {
         "en": "View Raw Data",
-        "bm": "Lihat Data Mentah"
+        "bm": "Lihat Data Mentah",
+        "cn": "查看原始数据"
     },
     "actions": {
         "en": "Actions",
-        "bm": "Tindakan"
+        "bm": "Tindakan",
+        "cn": "操作项"
     },
     "categories": {
         "en": "Categories",
-        "bm": "Kategori"
+        "bm": "Kategori",
+        "cn": "分类"
     },
     "language": {
         "en": "Language",
-        "bm": "Bahasa"
+        "bm": "Bahasa",
+        "cn": "语言"
     },
     "first_category": {
         "en": "First Category (Strong Wind/Rough Sea)",
-        "bm": "Kategori Pertama (Angin Kencang/Laut Bergelora)"
+        "bm": "Kategori Pertama (Angin Kencang/Laut Bergelora)",
+        "cn": "第一类（大风/巨浪)"
     },
     "second_category": {
         "en": "Second Category (Strong Wind/Rough Sea)",
-        "bm": "Kategori Kedua (Angin Kencang/Laut Bergelora)"
+        "bm": "Kategori Kedua (Angin Kencang/Laut Bergelora)",
+        "cn": "第二类（大风/巨浪)"
     },
     "third_category": {
         "en": "Third Category (Strong Wind/Rough Sea)",
-        "bm": "Kategori Ketiga (Angin Kencang/Laut Bergelora)"
+        "bm": "Kategori Ketiga (Angin Kencang/Laut Bergelora)",
+        "cn": "第三类（大风/巨浪)"
     },
     "thunderstorm": {
         "en": "Thunderstorm",
-        "bm": "Ribut Petir"
+        "bm": "Ribut Petir",
+        "cn": "雷暴"
     },
     "thunderstorm_warning": {
         "en": "Warning",
-        "bm": "Amaran"
+        "bm": "Amaran",
+        "cn": "雷暴警报"
     },
     "thunderstorm_watch": {
         "en": "Watch",
-        "bm": "Pewaspadaan"
+        "bm": "Pewaspadaan",
+        "cn": "雷暴观测"
     },
     "continuous_rain": {
         "en": "Continuous Rain",
-        "bm": "Hujan Berterusan"
+        "bm": "Hujan Berterusan",
+        "cn": "持续降雨"
     },
     "sea_level_rise": {
         "en": "Sea Level Rise",
-        "bm": "Kenaikan Paras Air Laut"
+        "bm": "Kenaikan Paras Air Laut",
+        "cn": "海平面上升"
     },
     "tropical_cyclone": {
         "en": "Tropical Cyclone",
-        "bm": "Siklon Tropika"
+        "bm": "Siklon Tropika",
+        "cn": "热带气旋"
     },
     "now": {
         "en": "Now",
-        "bm": "Sekarang"
+        "bm": "Sekarang",
+        "cn": "现在"
     },
     "alert": {
         "en": "Alert",
-        "bm": "Waspada"
+        "bm": "Waspada",
+        "cn": "警报"
     },
     "confirm_clear_data": {
         "en": "Are you sure you want to clear all local data? This action cannot be undone.",
-        "bm": "Adakah anda pasti mahu mengosongkan semua data tempatan? Tindakan ini tidak boleh dibuat asal."
+        "bm": "Adakah anda pasti mahu mengosongkan semua data tempatan? Tindakan ini tidak boleh dibuat asal.",
+        "cn": "您确定要清除所有本地数据吗？此操作无法撤销。"
     },
     "raw_data_header": {
         "en": "Raw Warning Data",
-        "bm": "Data Amaran Mentah"
+        "bm": "Data Amaran Mentah",
+        "cn": "原始警报数据"
     },
     "no_warnings_data": {
         "en": "No warnings data available.",
-        "bm": "Tiada data amaran tersedia."
+        "bm": "Tiada data amaran tersedia.",
+        "cn": "无可用警报数据。"
+    },
+    "issue": {
+        "en": "Issue: ",
+        "bm": "Dikeluarkan: ",
+        "cn": "发布于： "
+    },
+    "expires": {
+        "en": "Expires: ",
+        "bm": "Tamat: ",
+        "cn": "到期： "
+    },
+    "copy_text": {
+        "en": "Copy Text",
+        "bm": "Salin Teks",
+        "cn": "复制文本"
+    },
+    "valid_from": {
+        "en": "Valid:",
+        "bm": "Sah Mulai:",
+        "cn": "生效："
     },
     "locations": {
         "en": "Locations",
-        "bm": "Lokasi"
+        "bm": "Lokasi",
+        "cn": "地区"
     },
     "from": {
         "en": "From",
-        "bm": "Dari"
+        "bm": "Dari",
+        "cn": "从"
     },
     "until": {
         "en": "Until",
-        "bm": "Sehingga"
+        "bm": "Sehingga",
+        "cn": "直到"
     },
     "app_description": {
         "en": "High-precision weather radar & warning system for Malaysia.",
-        "bm": "Sistem radar cuaca & amaran berketepatan tinggi untuk Malaysia."
+        "bm": "Sistem radar cuaca & amaran berketepatan tinggi untuk Malaysia.",
+        "cn": "为马来西亚提供的高精度天气雷达与预警系统。"
     },
     "data_sources": {
         "en": "Data Sources",
-        "bm": "Sumber Data"
+        "bm": "Sumber Data",
+        "cn": "数据来源"
     },
     "faq_title_level3": {
         "en": "Will Level 3 radar data be available?",
-        "bm": "Adakah data radar Tahap 3 akan tersedia?"
+        "bm": "Adakah data radar Tahap 3 akan tersedia?",
+        "cn": "第三级雷达数据是否可用？"
     },
     "faq_tldr_level3": {
         "en": "No. For more information regarding climate data availability, please refer to the",
-        "bm": "Tidak. Untuk maklumat lanjut mengenai ketersediaan data iklim, sila rujuk"
+        "bm": "Tidak. Untuk maklumat lanjut mengenai ketersediaan data iklim, sila rujuk",
+        "cn": "不。有关气候数据可用性的更多信息，请参阅"
     },
     "faq_title_mappings": {
         "en": "Why are some mappings missing?",
-        "bm": "Mengapa sesetengah pemetaan hilang?"
+        "bm": "Mengapa sesetengah pemetaan hilang?",
+        "cn": "为什么有些映射缺失？"
     },
     "faq_text_mappings": {
         "en": "Government data is text-only. We manually map regions based on descriptions, which can cause slight mismatches with official boundaries.",
-        "bm": "Data kerajaan adalah teks sahaja. Kami memetakan kawasan secara manual berdasarkan penerangan, yang mungkin menyebabkan sedikit ketidakpadanan dengan sempadan rasmi."
+        "bm": "Data kerajaan adalah teks sahaja. Kami memetakan kawasan secara manual berdasarkan penerangan, yang mungkin menyebabkan sedikit ketidakpadanan dengan sempadan rasmi.",
+        "cn": "政府数据仅包含文本。我们根据描述手动映射，可能会导致与官方边界有轻微不符。"
     },
     "faq_title_rainviewer": {
         "en": "Why use RainViewer instead of Windy?",
-        "bm": "Mengapa menggunakan RainViewer dan bukan Windy?"
+        "bm": "Mengapa menggunakan RainViewer dan bukan Windy?",
+        "cn": "为什么使用 RainViewer 而不是 Windy？"
     },
     "faq_text_rainviewer": {
         "en": "RainViewer provides a free API for radar data, whereas Windy does not support the specific map overlays we need. More MET Malaysia information on data in a future update.",
-        "bm": "RainViewer menyediakan API percuma untuk data radar, manakala Windy tidak menyokong lapisan peta khusus yang kami perlukan. Maklumat lanjut mengenai data MET Malaysia dalam kemas kini akan datang."
+        "bm": "RainViewer menyediakan API percuma untuk data radar, manakala Windy tidak menyokong lapisan peta khusus yang kami perlukan. Maklumat lanjut mengenai data MET Malaysia dalam kemas kini akan datang.",
+        "cn": "RainViewer 提供免费的雷达数据 API，而 Windy 不支持我们需要的特定地图覆盖。更多关于 MET Malaysia 数据的信息将在未来更新中提供。"
     },
     "disclaimer_title": {
         "en": "Disclaimer:",
-        "bm": "Penafian:"
+        "bm": "Penafian:",
+        "cn": "免责声明："
     },
     "disclaimer_text": {
         "en": "Not an official service. Data comes from third-party open data and may be inaccurate or delayed. Do not use for safety-critical purposes.",
-        "bm": "Bukan perkhidmatan rasmi. Data berasal dari sumber terbuka pihak ketiga dan mungkin tidak tepat atau tertunda. Jangan gunakan untuk tujuan kritikal keselamatan."
+        "bm": "Bukan perkhidmatan rasmi. Data berasal dari sumber terbuka pihak ketiga dan mungkin tidak tepat atau tertunda. Jangan gunakan untuk tujuan kritikal keselamatan.",
+        "cn": "非官方服务。数据来自第三方开放数据，可能不准确或有延迟。请勿用于安全关键用途。"
     },
     "developed_by": {
         "en": "Developed by",
-        "bm": "Dibangunkan oleh"
+        "bm": "Dibangunkan oleh",
+        "cn": "开发者"
     },
     "notifications": {
         "en": "Notifications",
-        "bm": "Pemberitahuan"
+        "bm": "Pemberitahuan",
+        "cn": "通知"
     },
     "enable_notifications": {
         "en": "Enable Thunderstorm Notifications",
-        "bm": "Dayakan Pemberitahuan Ribut Petir"
+        "bm": "Dayakan Pemberitahuan Ribut Petir",
+        "cn": "启用雷暴通知"
     },
     "select_state": {
         "en": "Select State",
-        "bm": "Pilih Negeri"
+        "bm": "Pilih Negeri",
+        "cn": "选择州属"
     },
     "notification_permission_denied": {
         "en": "Notification permission denied. Please enable them in your browser settings.",
-        "bm": "Kebenaran pemberitahuan ditolak. Sila dayakan dalam tetapan penyemak imbas anda."
+        "bm": "Kebenaran pemberitahuan ditolak. Sila dayakan dalam tetapan penyemak imbas anda.",
+        "cn": "通知权限被拒绝。请在浏览器设置中启用。"
     },
     "select_district": {
         "en": "Select District",
-        "bm": "Pilih Daerah"
+        "bm": "Pilih Daerah",
+        "cn": "选择地区"
     },
     "all_state": {
         "en": "All",
-        "bm": "Semua"
+        "bm": "Semua",
+        "cn": "全部"
+    },
+    "forecast": {
+        "en": "Forecast",
+        "bm": "Ramalan",
+        "cn": "预报"
+    },
+    "seven_days_forecast": {
+        "en": "7 Days Forecast",
+        "bm": "Ramalan 7 Hari",
+        "cn": "7日预报"
+    },
+    "morning": {
+        "en": "Morning",
+        "bm": "Pagi",
+        "cn": "早上"
+    },
+    "afternoon": {
+        "en": "Afternoon",
+        "bm": "Petang",
+        "cn": "下午"
+    },
+    "night": {
+        "en": "Night",
+        "bm": "Malam",
+        "cn": "晚上"
+    },
+    "temp": {
+        "en": "Temp",
+        "bm": "Suhu",
+        "cn": "温度"
+    },
+    "berjerebu": {
+        "en": "Hazy",
+        "bm": "Berjerebu",
+        "cn": "烟霾"
+    },
+    "tiada hujan": {
+        "en": "No rain",
+        "bm": "Tiada hujan",
+        "cn": "无雨"
+    },
+    "hujan": {
+        "en": "Rain",
+        "bm": "Hujan",
+        "cn": "雨"
+    },
+    "hujan di beberapa tempat": {
+        "en": "Scattered rain",
+        "bm": "Hujan di beberapa tempat",
+        "cn": "局部有雨"
+    },
+    "hujan di beberapa tempat di kawasan pedalaman": {
+        "en": "Scattered rain over inland areas",
+        "bm": "Hujan di beberapa tempat di kawasan pedalaman",
+        "cn": "内陆地区局部有雨"
+    },
+    "hujan di satu dua tempat": {
+        "en": "Isolated Rain",
+        "bm": "Hujan di satu dua tempat",
+        "cn": "一两处有雨"
+    },
+    "hujan di satu dua tempat di kawasan pantai": {
+        "en": "Isolated rain over coastal areas",
+        "bm": "Hujan di satu dua tempat di kawasan pantai",
+        "cn": "沿海地区一两处有雨"
+    },
+    "hujan di satu dua tempat di kawasan pedalaman": {
+        "en": "Isolated rain over inland areas",
+        "bm": "Hujan di satu dua tempat di kawasan pedalaman",
+        "cn": "内陆地区一两处有雨"
+    },
+    "hujan di kebanyakan tempat": {
+        "en": "Widespread rain",
+        "bm": "Hujan di kebanyakan tempat",
+        "cn": "广泛降雨"
+    },
+    "hujan di kebanyakan tempat di kawasan pedalaman": {
+        "en": "Widespread rain over inland areas",
+        "bm": "Hujan di kebanyakan tempat di kawasan pedalaman",
+        "cn": "内陆地区广泛降雨"
+    },
+    "hujan menyeluruh": {
+        "en": "Widespread rain",
+        "bm": "Hujan menyeluruh",
+        "cn": "全面降雨"
+    },
+    "ribut petir": {
+        "en": "Thunderstorms",
+        "bm": "Ribut petir",
+        "cn": "雷暴"
+    },
+    "ribut petir di beberapa tempat": {
+        "en": "Scattered thunderstorms",
+        "bm": "Ribut petir di beberapa tempat",
+        "cn": "局部雷暴"
+    },
+    "ribut petir di beberapa tempat di kawasan pedalaman": {
+        "en": "Scattered thunderstorms over inland areas",
+        "bm": "Ribut petir di beberapa tempat di kawasan pedalaman",
+        "cn": "内陆地区局部雷暴"
+    },
+    "ribut petir di satu dua tempat": {
+        "en": "Isolated thunderstorms",
+        "bm": "Ribut petir di satu dua tempat",
+        "cn": "一两处雷暴"
+    },
+    "ribut petir di satu dua tempat di kawasan pantai": {
+        "en": "Isolated thunderstorms over coastal areas",
+        "bm": "Ribut petir di satu dua tempat di kawasan pantai",
+        "cn": "沿海地区一两处雷暴"
+    },
+    "ribut petir di satu dua tempat di kawasan pedalaman": {
+        "en": "Isolated thunderstorms over inland areas",
+        "bm": "Ribut petir di satu dua tempat di kawasan pedalaman",
+        "cn": "内陆地区一两处雷暴"
+    },
+    "ribut petir di kebanyakan tempat": {
+        "en": "Widespread thunderstorms",
+        "bm": "Ribut petir di kebanyakan tempat",
+        "cn": "广泛雷暴"
+    },
+    "ribut petir di kebanyakan tempat di kawasan pedalaman": {
+        "en": "Widespread thunderstorms over inland areas",
+        "bm": "Ribut petir di kebanyakan tempat di kawasan pedalaman",
+        "cn": "内陆地区广泛雷暴"
+    },
+    "ribut petir menyeluruh": {
+        "en": "Widespread thunderstorms",
+        "bm": "Ribut petir menyeluruh",
+        "cn": "全面雷暴"
+    },
+    "mendung": {
+        "en": "Cloudy",
+        "bm": "Mendung",
+        "cn": "多云"
     }
 }

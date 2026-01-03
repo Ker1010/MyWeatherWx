@@ -5,6 +5,7 @@ import type { DecodedWarning } from "../services/WeatherWarning";
 import type { FilterState } from "./WarningFilter";
 import type { LightningStrike } from "../services/LightningService";
 import { LightningService } from "../services/LightningService";
+import { RainViewerService } from "../services/RainViewerService";
 import { LanguageService } from "../services/LanguageService";
 import type { Language } from "../services/LanguageService";
 
@@ -327,16 +328,21 @@ export class MapComponent {
       if (!props) return;
 
       const color = props.color;
-      const isBm = this.currentLanguage === 'bm';
+      const lang = this.currentLanguage;
       
-      const heading = isBm ? props.heading_bm : props.heading_en;
-      const text = isBm ? props.text_bm : props.text_en;
-      const instruction = isBm ? props.instruction_bm : props.instruction_en;
-      const issueLabel = isBm ? "Dikeluarkan: " : "Issue: ";
-      const expireLabel = isBm ? "Tamat: " : "Expires: ";
-      const copyTextLabel = isBm ? "Salin Teks" : "Copy Text";
-      const validLabel = isBm ? "Sah Mulai:" : "Valid:";
-      const untilLabel = isBm ? "Sehingga:" : "Until:";
+      // Fallback to EN if CN (since API only has EN/BM for now)
+      // If we had Heading_CN, we would use it.
+      const heading = lang === 'bm' ? props.heading_bm : props.heading_en;
+      const text = lang === 'bm' ? props.text_bm : props.text_en;
+      const instruction = lang === 'bm' ? props.instruction_bm : props.instruction_en;
+      
+      const t = (key: string) => LanguageService.getInstance().translate(key);
+      
+      const issueLabel = t('issue');
+      const expireLabel = t('expires');
+      const copyTextLabel = t('copy_text');
+      const validLabel = t('valid_from');
+      const untilLabel = t('until');
 
 
       const popupContent = `
@@ -513,7 +519,7 @@ export class MapComponent {
     this.map.addSource("rainviewer", {
       type: "raster",
       tiles: [
-        `https://tilecache.rainviewer.com/v2/radar/${timestamp}/256/{z}/{x}/{y}/2/1_1.png`,
+        RainViewerService.getTileUrl(timestamp, 256)
       ],
       tileSize: 256
     });
@@ -578,6 +584,7 @@ export class MapComponent {
         ? this.latestRadarTimestamp 
         : timestamp;
 
+    this.currentRadarTimestamp = safeTimestamp;
     this.addRainViewerLayer(safeTimestamp);
     
     // Restore visibility
@@ -585,6 +592,21 @@ export class MapComponent {
         this.map.setLayoutProperty(layerId, "visibility", "none");
     }
   }
+
+  public setRainViewerColorScheme(schemeId: number) {
+      RainViewerService.colorScheme = schemeId;
+      // Refresh with current display time (or latest radar time used for display)
+      // We can basically re-trigger updateRainViewerLayer with the current meaningful timestamp.
+      // But updateRainViewerLayer takes a timestamp.
+      // We need to know what the *current* timestamp showing is.
+      // We can use this.currentDisplayTime / 1000 (convert back to seconds).
+      
+      this.updateRainViewerLayer(this.currentDisplayTime / 1000);
+  }
+
+
+
+
 
   private currentDisplayTime: number = Date.now();
 
@@ -601,6 +623,17 @@ export class MapComponent {
     this.currentFilter = filter;
     this.renderWarnings();
   }
+
+  public toggleWarnings(visible: boolean) {
+      if (visible) {
+          this.map.setLayoutProperty("warnings-fill", "visibility", "visible");
+          this.map.setLayoutProperty("warnings-line", "visibility", "visible");
+      } else {
+          this.map.setLayoutProperty("warnings-fill", "visibility", "none");
+          this.map.setLayoutProperty("warnings-line", "visibility", "none");
+      }
+  }
+
 
   public setLanguage(lang: Language) {
       if (this.currentLanguage === lang) return;
@@ -760,7 +793,7 @@ export class MapComponent {
     let source = this.map.getSource("forecast-source") as GeoJSONSource;
     
     // Initialize if not exists
-    if (!source) {
+    if (!source && this.map) {
        this.map.addSource("forecast-source", {
         type: "geojson",
         data: {
@@ -768,6 +801,8 @@ export class MapComponent {
           features: [],
         },
       });
+
+      const beforeLayerId = this.map.getLayer("rainviewer-radar") ? "rainviewer-radar" : "malaysia-outline";
 
       this.map.addLayer(
         {
@@ -779,27 +814,7 @@ export class MapComponent {
             "fill-opacity": 0.6,
           },
         },
-        "malaysia-outline-detailed" // Place below detailed outline
-      );
-      
-      this.map.addLayer(
-        {
-            id: "forecast-labels",
-            type: "symbol",
-            source: "forecast-source",
-            minzoom: 6,
-            layout: {
-                "text-field": ["get", "forecast_short"],
-                "text-size": 10,
-                "text-offset": [0, 1.5],
-                "text-anchor": "top"
-            },
-            paint: {
-                "text-color": "#ffffff",
-                "text-halo-color": "#000000",
-                "text-halo-width": 1
-            }
-        }
+        beforeLayerId
       );
 
       // Add click handler for details
@@ -808,20 +823,23 @@ export class MapComponent {
          const props = e.features[0].properties;
          if (!props) return;
          
+         const t = (key: string) => LanguageService.getInstance().translate(key.toLowerCase());
+         
          const popupContent = `
-            <div class="glass-panel p-2" style="font-family: sans-serif; min-width: 200px;">
+            <div class="glass-panel p-2" style="color: #d0d0d0 !important;">
                 <h4 style="margin: 0 0 5px 0;">${props.location_name}</h4>
                 <div style="font-size: 14px; margin-bottom: 5px;">
-                    <span style="font-weight: bold; color: ${props.color}">${props.summary_forecast}</span>
+                    <span style="font-weight: bold; color: ${props.color}">${t(props.summary_forecast)}</span>
                 </div>
                 <div style="font-size: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-                    <div>Morning: <br> ${props.morning}</div>
-                    <div>Afternoon: <br> ${props.afternoon}</div>
-                    <div>Night: <br> ${props.night}</div>
-                    <div>Temp: <br> ${props.min_temp}°C - ${props.max_temp}°C</div>
+                    <div>${t('morning')}: <br> ${t(props.morning)}</div>
+                    <div>${t('afternoon')}: <br> ${t(props.afternoon)}</div>
+                    <div>${t('night')}: <br> ${t(props.night)}</div>
+                    <div>${t('temp')}: <br> ${props.min_temp}°C - ${props.max_temp}°C</div>
                 </div>
             </div>
          `;
+
          
          new maplibregl.Popup({ closeButton: true, className: "forecast-popup" })
             .setLngLat(e.lngLat)
@@ -866,14 +884,20 @@ export class MapComponent {
     forecasts.forEach(forecast => {
         const cleanName = forecast.location.location_name.toLowerCase().replace(/\s+/g, "-");
         
+        // Check for mapping
+        const mappedLocations = MapComponent.REGION_MAPPING[cleanName] || [cleanName];
+
         // Find matching features in geojsonFeatures
         // This relies on map.on('load') having populated geojsonFeatures
         const matchedFeatures = this.geojsonFeatures.filter((feature) => {
            const featureName = (feature.properties?.name || "").toLowerCase().replace(/\s+/g, "-");
            const featureId = (feature.id || "").toLowerCase().replace(/\s+/g, "-");
            
-           // Direct match or partial match if needed (districts often match 1:1)
-           return featureName === cleanName || featureId === cleanName;
+           // Check if this feature matches ANY of the mapped locations
+           return mappedLocations.some(loc => {
+               const cleanLoc = loc.toLowerCase().replace(/\s+/g, "-");
+               return featureName === cleanLoc || featureId === cleanLoc;
+           });
         });
         
         const color = getColor(forecast.summary_forecast);
@@ -891,7 +915,6 @@ export class MapComponent {
                     night: forecast.night_forecast,
                     min_temp: forecast.min_temp,
                     max_temp: forecast.max_temp,
-                    forecast_short: forecast.summary_forecast.replace("Hujan", "Rain").replace("Ribut petir", "Storm").replace("Tiada hujan", "").replace(" di beberapa tempat", "").replace(" di kebanyakan tempat", ""),
                     color: color
                 }
             });
@@ -906,18 +929,53 @@ export class MapComponent {
     }
   }
 
+  // --- Probe / Tooltip Logic ---
+  
+  private isProbeMode = false;
+  private probeTooltip: HTMLElement | null = null;
+  private probeCache: { x: number, y: number, z: number, url: string, img: HTMLImageElement, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D } | null = null;
+  private currentRadarTimestamp: number = 0; // Store the exact timestamp used for the layer
+
+  public toggleProbeMode(enabled: boolean) {
+      if (this.isProbeMode === enabled) return;
+      this.isProbeMode = enabled;
+      
+      // Update cursor
+      this.map.getCanvas().style.cursor = enabled ? 'crosshair' : ''; // 'help' is often a question mark or pointer, efficient differentiation
+      
+      // If enabling probe, create tooltip if needed
+      if (enabled) {
+          if (!this.probeTooltip) {
+              this.probeTooltip = document.createElement('div');
+              this.probeTooltip.className = 'glass-panel';
+              this.probeTooltip.style.position = 'absolute';
+              this.probeTooltip.style.padding = '4px 8px';
+              this.probeTooltip.style.pointerEvents = 'none'; // Don't block mouse
+              this.probeTooltip.style.zIndex = '2000';
+              this.probeTooltip.style.display = 'none';
+              this.probeTooltip.style.fontSize = '12px';
+              this.probeTooltip.style.color = '#fff';
+              this.probeTooltip.style.whiteSpace = 'nowrap';
+              document.body.appendChild(this.probeTooltip);
+          }
+          this.probeTooltip.style.display = 'block';
+
+      } else {
+          if (this.probeTooltip) {
+              this.probeTooltip.style.display = 'none';
+          }
+      }
+  }
+
   // --- Drawing Logic ---
 
   public toggleDrawingMode(enabled: boolean) {
       this.isDrawingMode = enabled;
       this.map.getCanvas().style.cursor = enabled ? 'crosshair' : '';
       
-      // Disable map drag pan if we want to ensure drawing doesn't drag map, 
-      // BUT for "pan-like" drawing, maybe we want to hold shift? 
-      // User said "draw on map like a pan" -> likely meant "pen".
-      // We will disable dragPan only while actively drawing (mousedown), 
-      // but let's disable standard interactions if in drawing mode to be safe/clear?
       if (enabled) {
+          // If drawing is enabled, disable probe
+          if (this.isProbeMode) this.toggleProbeMode(false);
           this.map.dragPan.disable();
       } else {
           this.map.dragPan.enable();
@@ -944,10 +1002,107 @@ export class MapComponent {
   }
 
   private onMouseMove(e: any) {
-      if (!this.isDrawingMode || !this.isDrawing || !this.currentDrawingFeature) return;
+      // Handle Drawing first
+      if (this.isDrawingMode && this.isDrawing && this.currentDrawingFeature) {
+          this.currentDrawingFeature.geometry.coordinates.push([e.lngLat.lng, e.lngLat.lat]);
+          this.updateDrawnSource();
+          return;
+      }
 
-      this.currentDrawingFeature.geometry.coordinates.push([e.lngLat.lng, e.lngLat.lat]);
-      this.updateDrawnSource();
+      // Handle Probe
+      if (this.isProbeMode && this.probeTooltip) {
+          this.updateProbe(e);
+      }
+  }
+
+  private async updateProbe(e: any) {
+      if (!this.probeTooltip) return;
+
+      // Move tooltip to mouse position
+      this.probeTooltip.style.left = `${e.originalEvent.pageX + 15}px`;
+      this.probeTooltip.style.top = `${e.originalEvent.pageY + 15}px`;
+
+      // Get color
+      const color = await this.getRadarValueAt(e.lngLat.lng, e.lngLat.lat);
+      if (color) {
+          this.probeTooltip.innerHTML = `<strong>${color}</strong>`;
+          this.probeTooltip.style.display = 'block';
+      } else {
+          this.probeTooltip.innerText = "No Data";
+          this.probeTooltip.style.display = 'none'; // Or show 'No Rain'
+      }
+  }
+
+  // Helper function to project lat/lon to tile coords
+  private getTileCoords(lat: number, lon: number, zoom: number) {
+        const xPercent = (lon + 180) / 360;
+        const latRad = lat * Math.PI / 180;
+        const mercN = Math.log(Math.tan(latRad) + (1 / Math.cos(latRad)));
+        const yPercent = (1 - (mercN / Math.PI)) / 2;
+        
+        const numTiles = 1 << zoom;
+        const x = Math.floor(xPercent * numTiles);
+        const y = Math.floor(yPercent * numTiles);
+
+        // Pixel within title
+        const pixelX = Math.floor((xPercent * numTiles - x) * 256);
+        const pixelY = Math.floor((yPercent * numTiles - y) * 256);
+
+        return { x, y, pixelX, pixelY };
+  }
+
+  private async getRadarValueAt(lon: number, lat: number): Promise<string | null> {
+      // Use Zoom Level 6 for sampling (good balance of detail and cache hit rate)
+      // We could use current map zoom, but that makes cache thrashing likely. 
+      // Z=6 covers a large area.
+      const SAMPLE_ZOOM = 6;
+      
+      const { x, y, pixelX, pixelY } = this.getTileCoords(lat, lon, SAMPLE_ZOOM);
+      
+      const timestamp = this.currentRadarTimestamp;
+      if (!timestamp) return null;
+
+      const url = `https://tilecache.rainviewer.com/v2/radar/${timestamp}/256/${SAMPLE_ZOOM}/${x}/${y}/${RainViewerService.colorScheme}/1_1.png`;
+
+      // Check Cache
+      let ctx = this.probeCache?.ctx;
+      
+      if (!this.probeCache || this.probeCache.url !== url) {
+          // Verify we have a timestamp
+          if (!timestamp) return null;
+          
+          try {
+              const img = new Image();
+              img.crossOrigin = "Anonymous";
+              img.src = url;
+              
+              await new Promise((resolve, reject) => {
+                  img.onload = resolve;
+                  img.onerror = reject;
+              });
+
+              const canvas = document.createElement('canvas');
+              canvas.width = 256;
+              canvas.height = 256;
+              ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+              ctx.drawImage(img, 0, 0);
+
+              this.probeCache = { x, y, z: SAMPLE_ZOOM, url, img, canvas, ctx };
+          } catch (e) {
+              console.warn("Failed to load probe tile", e);
+              return null;
+          }
+      }
+
+      if (!ctx) return null;
+
+      // Read pixel
+      const p = ctx.getImageData(pixelX, pixelY, 1, 1).data;
+      // p is [r, g, b, a]
+      
+      if (p[3] === 0) return null; // Transparent
+
+      return RainViewerService.getDbz(p[0], p[1], p[2]);
   }
 
   private onMouseUp() {
@@ -971,3 +1126,4 @@ export class MapComponent {
       }
   }
 }
+

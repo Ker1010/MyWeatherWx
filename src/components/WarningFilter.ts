@@ -1,5 +1,6 @@
 import { LanguageService } from '../services/LanguageService';
 import { NotificationService } from '../services/NotificationService';
+import { RainViewerService } from '../services/RainViewerService';
 
 export type WarningCategory = 'first' | 'second' | 'third' | 'alert' | 'thunderstorm_warning' | 'thunderstorm_watch' | 'sea_level' | 'no_advisory' | 'continuous_rain' | 'tropical_cyclone';
 
@@ -11,11 +12,16 @@ export interface FilterState {
 export class WarningFilter {
     private container: HTMLElement;
     private state: FilterState;
-    private activeTab: 'filter' | 'settings' = 'filter';
+    private activeTab: 'filter' | 'settings' | 'forecast' = 'filter';
+    private activeForecastDay: number | null = null;
+
     private languageService: LanguageService;
 
     private onChange: (state: FilterState) => void;
     private onToggleRawView?: () => void;
+    private onForecastSelect?: (dayIndex: number | null) => void;
+    private onColorSchemeChange?: (id: number) => void;
+
 
     // Ordered categories for display
     private static CATEGORIES: { 
@@ -51,10 +57,14 @@ export class WarningFilter {
     constructor(
         onChange: (state: FilterState) => void, 
         onToggleRawView?: () => void,
-        defaultActiveCategories?: string[]
+        onForecastSelect?: (dayIndex: number | null) => void,
+        defaultActiveCategories?: string[],
+        onColorSchemeChange?: (id: number) => void
     ) {
         this.onChange = onChange;
         this.onToggleRawView = onToggleRawView;
+        this.onForecastSelect = onForecastSelect;
+        this.onColorSchemeChange = onColorSchemeChange;
         this.languageService = LanguageService.getInstance();
         
         // Initialize with provided defaults or all IDs
@@ -123,7 +133,13 @@ export class WarningFilter {
     }
 
     private render() {
-        const isFilterActive = this.activeTab === 'filter';
+        // Save scroll position of active tab before re-render
+        let previousScrollTop = 0;
+        const activeContent = this.container.querySelector(`.tab-content[data-tab="${this.activeTab}"]`);
+        if (activeContent) {
+            previousScrollTop = activeContent.scrollTop;
+        }
+
         const t = (key: string) => this.languageService.translate(key);
         
         this.container.innerHTML = `
@@ -133,11 +149,13 @@ export class WarningFilter {
             </div>
             
             <div class="filter-tabs">
-                <button class="tab-btn ${isFilterActive ? 'active' : ''}" data-tab="filter">${t('filter')}</button>
-                <button class="tab-btn ${!isFilterActive ? 'active' : ''}" data-tab="settings">${t('settings')}</button>
+                <button class="tab-btn ${this.activeTab === 'filter' ? 'active' : ''}" data-tab="filter">${t('filter')}</button>
+                <button class="tab-btn ${this.activeTab === 'forecast' ? 'active' : ''}" data-tab="forecast">${t('forecast')}</button>
+                <button class="tab-btn ${this.activeTab === 'settings' ? 'active' : ''}" data-tab="settings">${t('settings')}</button>
             </div>
 
-            <div class="filter-content tab-content" data-tab="filter" style="${isFilterActive ? '' : 'display: none;'}">
+
+            <div class="filter-content tab-content" data-tab="filter" style="${this.activeTab === 'filter' ? '' : 'display: none;'}">
                 <div class="filter-section">
                     <h5>${t('actions')}</h5>
                     <button id="view-raw-btn" class="action-btn btn btn-primary w-100">
@@ -150,13 +168,33 @@ export class WarningFilter {
                 </div>
             </div>
 
-            <div class="filter-content tab-content" data-tab="settings" style="${!isFilterActive ? '' : 'display: none;'}">
+            <div class="filter-content tab-content" data-tab="forecast" style="${this.activeTab === 'forecast' ? '' : 'display: none;'}">
+                 <div class="filter-section">
+                    <h5>${t('seven_days_forecast')}</h5>
+                    <div class="forecast-days-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        ${this.renderForecastDays()}
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="filter-content tab-content" data-tab="settings" style="${this.activeTab === 'settings' ? '' : 'display: none;'}">
+
                 <div class="filter-section">
                     <h5>${t('language')}</h5>
                     <div class="language-toggle">
                          <button class="lang-btn btn btn-outline-light btn-sm ${this.languageService.getLanguage() === 'en' ? 'active' : ''}" data-lang="en">English</button>
                          <button class="lang-btn btn btn-outline-light btn-sm ${this.languageService.getLanguage() === 'bm' ? 'active' : ''}" data-lang="bm">Bahasa</button>
+                         <button class="lang-btn btn btn-outline-light btn-sm ${this.languageService.getLanguage() === 'cn' ? 'active' : ''}" data-lang="cn">中文</button>
                     </div>
+                </div>
+
+                <div class="filter-section">
+                    <h5>${t('radar_color')}</h5>
+                    <select id="radar-color-select" class="form-select" style="width: 100%; padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid rgba(255,255,255,0.2);">
+                        ${RainViewerService.COLOR_SCHEMES.map(s => `<option value="${s.id}" ${RainViewerService.colorScheme === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                    </select>
                 </div>
 
                 <div class="filter-section">
@@ -202,6 +240,12 @@ export class WarningFilter {
         `;
 
         this.attachEventListeners();
+
+        // Restore scroll position
+        const newActiveContent = this.container.querySelector(`.tab-content[data-tab="${this.activeTab}"]`);
+        if (newActiveContent) {
+            newActiveContent.scrollTop = previousScrollTop;
+        }
     }
 
     private getPlaybackSetting(): boolean {
@@ -214,10 +258,28 @@ export class WarningFilter {
         this.container.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const target = e.target as HTMLElement;
-                const tab = target.dataset.tab as 'filter' | 'settings';
+                const tab = target.dataset.tab as 'filter' | 'settings' | 'forecast';
                 this.activeTab = tab;
+                
+                // Trigger forecast clear if leaving forecast tab?
+                // Or trigger warning show if entering filter tab?
+                // Logic:
+                // If switching TO forecast: We likely want to show the last selected day or default to Day 1? 
+                //    But user has to click a day to select. 
+                // If switching TO filter: We want to show warnings.
+                
+                if (tab === 'filter') {
+                     // Mode A: Warnings
+                     if (this.onForecastSelect) this.onForecastSelect(null);
+                     this.activeForecastDay = null; // Reset selection visualization
+                } 
+                // If switching TO forecast, wait for user to select day? 
+                // Or auto select day 0? 
+                // Let's force user to select for now, or just show list. 
+                
                 this.render(); // Re-render to update UI state
             });
+
         });
 
         // Language Switching
@@ -299,7 +361,25 @@ export class WarningFilter {
         rawBtn?.addEventListener('click', () => {
              if (this.onToggleRawView) this.onToggleRawView();
         });
+
+        // Forecast Day Buttons
+        this.container.querySelectorAll('.forecast-day-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const target = e.currentTarget as HTMLElement; // Use currentTarget because button has children
+                const index = parseInt(target.dataset.index || '0');
+                this.activeForecastDay = index;
+                if (this.onForecastSelect) this.onForecastSelect(index);
+                this.render();
+            });
+        });
+        // Radar Color Select
+        const radarColorSelect = this.container.querySelector('#radar-color-select');
+        radarColorSelect?.addEventListener('change', (e) => {
+            const val = parseInt((e.target as HTMLSelectElement).value);
+            if (this.onColorSchemeChange) this.onColorSchemeChange(val);
+        });
     }
+
 
     private showConfirmModal(message: string, onConfirm: () => void) {
         const modal = document.getElementById('confirm-modal');
@@ -411,24 +491,8 @@ export class WarningFilter {
         if (!state) return `<option value="">-- ${t('select_district')} --</option>`;
 
         const normalizedState = state.toLowerCase().replace(/\s+/g, '-');
-        // Region mapping keys are typically strict "johor", "kedah". The states list has "Johor".
-        // Need to be careful. region_mapping from public folder keys: "johor", "kedah", "hulu-perak" not quite matching state list perfectly?
-        // Let's check region_mapping structure previously read.
-        // It has "johor", "pahang", "terengganu", etc. Lowercase, dashed.
-        
-        // Handle Federal Territories special cases if any
-        // Kuala Lumpur -> ft-kuala-lumpur? in mapping: "ft-kuala-lumpur" is inside "selangor"? Wait, KL is usually separate.
-        // Let's check the partial read. "selangor" has "ft-kuala-lumpur".
-        // If user selects "Kuala Lumpur", regionMapping["kuala-lumpur"] might not exist?
-        // Actually, for Malaysia warnings, KL is often its own entity. 
-        // If mapping doesn't have it as a key, return empty.
-        
-        let targetKey = normalizedState;
-        if (state === "Kuala Lumpur") targetKey = "ft-kuala-lumpur";
-        if (state === "Putrajaya") targetKey = "ft-putrajaya";
-        if (state === "Labuan") targetKey = "wp-labuan";
 
-        const districts = this.regionMapping[targetKey] || [];
+        const districts = this.regionMapping[normalizedState] || [];
         
         // Sort districts A-Z
         districts.sort();
@@ -441,4 +505,23 @@ export class WarningFilter {
         
         return allOption + opts;
     }
+    private renderForecastDays(): string {
+        let html = '';
+        for (let i = 0; i < 7; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() + i);
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+            const dateStr = date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+            const isSelected = this.activeForecastDay === i;
+            
+            html += `
+                <button class="forecast-day-btn btn ${isSelected ? 'btn-primary' : 'btn-ghost'}" data-index="${i}" style="text-align: left; padding: 10px; justify-content: flex-start;">
+                    <div style="font-weight: bold;">${dayName} - Day ${i + 1}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">${dateStr}</div>
+                </button>
+            `;
+        }
+        return html;
+    }
 }
+

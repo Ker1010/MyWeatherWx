@@ -714,6 +714,10 @@ body {
   .rain-btn {
       bottom: 154px; /* 100px + 44px + 10px gap */
   }
+
+  .probe-btn {
+      display: none !important;
+  }
 }
 
 /* Version Link */

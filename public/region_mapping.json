@@ -1,8 +1,8 @@
 {
     "east-johor": [
-        "kota-tinggi", 
-        "mersing", 
-        "segamat", 
+        "kota-tinggi",
+        "mersing",
+        "segamat",
         "kluang"
     ],
     "johor": [
@@ -229,7 +229,10 @@
         "meradong"
     ],
     "wp-labuan": [
-        "labuan"
+        "ft-labuan"
+    ],
+    "fp-labuan": [
+        "ft-labuan"
     ],
     "bintulu": [
         "bintulu",
@@ -305,14 +308,14 @@
         "sepang",
         "ft-putrajaya"
     ],
-    "tawau":[
+    "tawau": [
         "tawau",
         "kalabakan",
         "lahad-datu",
         "kunak",
         "semporna"
     ],
-    "sandakan":[
+    "sandakan": [
         "sandakan",
         "beluran",
         "telupid",

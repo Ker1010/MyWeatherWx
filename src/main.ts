@@ -4,13 +4,20 @@ import { WarningFilter } from './components/WarningFilter';
 import { RawWarningViewer } from './components/RawWarningViewer';
 import { RainViewerService } from './services/RainViewerService';
 import { WeatherWarningService, WeatherWarningDecoder } from './services/WeatherWarning';
+import { ForecastService } from './services/ForecastService';
+
 import { changelogData } from './utils/changelog';
 import { LanguageService } from './services/LanguageService';
 import { NotificationService } from './services/NotificationService';
 import { Snowfall } from './utils/Snowfall';
 
+// import { RainLegend } from './components/RainLegend';
+
 const mapComponent = new MapComponent('map');
 const rawWarningViewer = new RawWarningViewer();
+
+
+
 
 let currentWarnings: any[] = [];
 
@@ -21,17 +28,9 @@ let currentWarnings: any[] = [];
 // 'thunderstorm_warning', 'thunderstorm_watch'
 // 'continuous_rain', 'sea_level', 'tropical_cyclone', 'alert'
 const DEFAULT_ACTIVE_WARNINGS: string[] = ['continuous_rain', 'alert', 'thunderstorm_warning'];
-// Initialize Filter
-new WarningFilter(
-    (filterState) => {
-        mapComponent.setFilter(filterState);
-    },
-    () => {
-        // Toggle Raw View
-        rawWarningViewer.show(currentWarnings);
-    },
-    DEFAULT_ACTIVE_WARNINGS
-);
+
+// WarningFilter initialization moved to map.load to handle forecast dependencies
+
 
 // About Panel Toggle
 const aboutToggle = document.getElementById('about-toggle');
@@ -273,19 +272,54 @@ if (nowBtn) {
 }
 
 const drawBtn = document.getElementById('draw-btn');
+const probeBtn = document.getElementById('probe-btn');
+
+let isDrawingEnabled = false;
+let isProbeEnabled = false;
+
 if (drawBtn) {
-    let isDrawingEnabled = false;
     drawBtn.addEventListener('click', () => {
         isDrawingEnabled = !isDrawingEnabled;
         mapComponent.toggleDrawingMode(isDrawingEnabled);
         
         if (isDrawingEnabled) {
+            // Disable Probe
+            isProbeEnabled = false;
+            if (probeBtn) probeBtn.classList.remove('active');
+
             drawBtn.classList.add('active');
             drawBtn.innerHTML = '<i class="bi bi-eraser-fill"></i>'; 
         } else {
             drawBtn.classList.remove('active');
             drawBtn.innerHTML = '<i class="bi bi-pen-fill"></i>';
             mapComponent.clearDrawings();
+        }
+    });
+}
+
+if (probeBtn) {
+    probeBtn.addEventListener('click', () => {
+        isProbeEnabled = !isProbeEnabled;
+        
+        if (isProbeEnabled) {
+            // Disable Draw
+            isDrawingEnabled = false;
+            mapComponent.toggleDrawingMode(false); // Ensure map state is updated explicitly
+            
+            if (drawBtn) {
+                drawBtn.classList.remove('active');
+                drawBtn.innerHTML = '<i class="bi bi-pen-fill"></i>';
+                // We don't automatically clear drawings when switching to probe,
+                // allowing user to probe while drawings exist.
+            }
+        }
+
+        mapComponent.toggleProbeMode(isProbeEnabled);
+
+        if (isProbeEnabled) {
+            probeBtn.classList.add('active');
+        } else {
+            probeBtn.classList.remove('active');
         }
     });
 }
@@ -356,7 +390,78 @@ mapComponent.onLoad(async () => {
 
     await fetchWarnings();
     setInterval(fetchWarnings, 3 * 60 * 1000); // Poll every 3 minutes
+
+    // forecasts
+    let globalForecasts: any[] = [];
+    
+    const fetchForecasts = async () => {
+        try {
+            const forecasts = await ForecastService.fetchData();
+            if (forecasts) {
+               globalForecasts = forecasts;
+               // Default: Render nothing until user clicks tab? 
+               // Or render warnings as default.
+            }
+        } catch (err) {
+            console.error("Forecast fetch failed:", err);
+        }
+    };
+
+    await fetchForecasts();
+    setInterval(fetchForecasts, 60 * 60 * 1000); // Poll every hour
+
+    // Forecast Selection Handler (Using Side Panel)
+    const handleForecastSelection = (dayIndex: number | null) => {
+         if (dayIndex === null) {
+            // "Warnings" mode
+            mapComponent.renderForecast([]); 
+            mapComponent.toggleWarnings(true);
+            
+            // Temporary Hack: Re-set existing warnings if needed, but toggleWarnings(true) should handle visibility
+        } else {
+            // "Forecast" mode
+            if (globalForecasts.length) {
+                 const today = new Date();
+                 const targetDate = new Date(today);
+                 targetDate.setDate(today.getDate() + dayIndex);
+                 
+                 const year = targetDate.getFullYear();
+                 const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+                 const day = String(targetDate.getDate()).padStart(2, '0');
+                 const dateStr = `${year}-${month}-${day}`;
+                 
+                 const dayForecasts = globalForecasts.filter(f => f.date === dateStr);
+                 mapComponent.renderForecast(dayForecasts);
+                 
+                 // Hide Warnings
+                 mapComponent.toggleWarnings(false); 
+            }
+        }
+    };
+
+    // Instantiate WarningFilter (Side Panel) with Forecast Support
+    new WarningFilter(
+        (filterState) => {
+            mapComponent.setFilter(filterState);
+        },
+        () => {
+            rawWarningViewer.show(currentWarnings);
+        },
+        handleForecastSelection, // Pass the forecast selection callback
+        DEFAULT_ACTIVE_WARNINGS,
+        (schemeId) => {
+             mapComponent.setRainViewerColorScheme(schemeId);
+             localStorage.setItem('rainviewer_color_scheme', schemeId.toString());
+        }
+    );
+
+    // Initialize RainViewer Color Scheme
+    const savedScheme = localStorage.getItem('rainviewer_color_scheme');
+    if (savedScheme) {
+        mapComponent.setRainViewerColorScheme(parseInt(savedScheme));
+    }
 });
+
 
 // Initialize Language Service Connection
 const languageService = LanguageService.getInstance();

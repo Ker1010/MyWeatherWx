@@ -1,6 +1,6 @@
 import translationsData from '../i18n/translations.json';
 
-export type Language = 'en' | 'bm';
+export type Language = 'en' | 'bm' | 'cn';
 
 export class LanguageService {
     private static instance: LanguageService;
@@ -10,7 +10,7 @@ export class LanguageService {
     private constructor() {
         // Load saved language
         const saved = localStorage.getItem('app_language');
-        if (saved === 'en' || saved === 'bm') {
+        if (saved === 'en' || saved === 'bm' || saved === 'cn') {
             this.currentLang = saved;
         }
     }
