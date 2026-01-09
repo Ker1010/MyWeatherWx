@@ -6,6 +6,16 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: 'v1.3',
+    date: '2026-01-10',
+    changes: [
+      'QNA Section Improvements',
+      'Add Copyright Info',
+      'Remove Discord Server',
+      'SEO Improvements',
+    ]
+  },
+  {
     version: 'v1.2',
     date: '2026-01-03',
     changes: [

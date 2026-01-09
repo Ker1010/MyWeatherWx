@@ -175,14 +175,14 @@
         "cn": "数据来源"
     },
     "faq_title_level3": {
-        "en": "Will Level 3 radar data be available?",
-        "bm": "Adakah data radar Tahap 3 akan tersedia?",
-        "cn": "第三级雷达数据是否可用？"
+        "en": "Will Meteorologist Radar Data be available?",
+        "bm": "Adakah data radar meteorologi akan tersedia?",
+        "cn": "气象雷达数据是否可用？"
     },
     "faq_tldr_level3": {
-        "en": "No. For more information regarding climate data availability, please refer to the",
-        "bm": "Tidak. Untuk maklumat lanjut mengenai ketersediaan data iklim, sila rujuk",
-        "cn": "不。有关气候数据可用性的更多信息，请参阅"
+        "en": "No. For more information regarding meteorologist radar data availability, please refer to the",
+        "bm": "Tidak. Untuk maklumat lanjut mengenai ketersediaan data radar meteorologi, sila rujuk",
+        "cn": "不。有关气象雷达数据可用性的更多信息，请参阅"
     },
     "faq_title_mappings": {
         "en": "Why are some mappings missing?",

@@ -475,3 +475,9 @@ languageService.subscribe((lang) => {
         nowBtn.textContent = languageService.translate('now');
     }
 });
+
+// Set Copyright Year
+const copyrightYear = document.getElementById('copyright-year');
+if (copyrightYear) {
+    copyrightYear.textContent = new Date().getFullYear().toString();
+}
