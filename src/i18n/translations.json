@@ -219,36 +219,6 @@
         "bm": "Dibangunkan oleh",
         "cn": "开发者"
     },
-    "notifications": {
-        "en": "Notifications",
-        "bm": "Pemberitahuan",
-        "cn": "通知"
-    },
-    "enable_notifications": {
-        "en": "Enable Thunderstorm Notifications",
-        "bm": "Dayakan Pemberitahuan Ribut Petir",
-        "cn": "启用雷暴通知"
-    },
-    "select_state": {
-        "en": "Select State",
-        "bm": "Pilih Negeri",
-        "cn": "选择州属"
-    },
-    "notification_permission_denied": {
-        "en": "Notification permission denied. Please enable them in your browser settings.",
-        "bm": "Kebenaran pemberitahuan ditolak. Sila dayakan dalam tetapan penyemak imbas anda.",
-        "cn": "通知权限被拒绝。请在浏览器设置中启用。"
-    },
-    "select_district": {
-        "en": "Select District",
-        "bm": "Pilih Daerah",
-        "cn": "选择地区"
-    },
-    "all_state": {
-        "en": "All",
-        "bm": "Semua",
-        "cn": "全部"
-    },
     "forecast": {
         "en": "Forecast",
         "bm": "Ramalan",
@@ -373,6 +343,11 @@
         "en": "Widespread thunderstorms over inland areas",
         "bm": "Ribut petir di kebanyakan tempat di kawasan pedalaman",
         "cn": "内陆地区广泛雷暴"
+    },
+    "hujan di beberapa tempat di kawasan pantai": {
+        "en": "Scattered rain over coastal areas",
+        "bm": "Hujan di beberapa tempat di kawasan pantai",
+        "cn": "沿海地区局部有雨"
     },
     "ribut petir menyeluruh": {
         "en": "Widespread thunderstorms",

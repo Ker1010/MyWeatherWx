@@ -6,6 +6,15 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: 'v1.4',
+    date: '2026-01-31',
+    changes: [
+      'Localized Forecast Descriptions',
+      'Removed PWA Notification',
+      'SEO Improvements',
+    ]
+  },
+  {
     version: 'v1.3',
     date: '2026-01-10',
     changes: [

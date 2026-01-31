@@ -8,7 +8,6 @@ import { ForecastService } from './services/ForecastService';
 
 import { changelogData } from './utils/changelog';
 import { LanguageService } from './services/LanguageService';
-import { NotificationService } from './services/NotificationService';
 import { Snowfall } from './utils/Snowfall';
 
 // import { RainLegend } from './components/RainLegend';
@@ -379,9 +378,6 @@ mapComponent.onLoad(async () => {
                 const decoded = WeatherWarningDecoder.decode(warningData);
                 currentWarnings = decoded;
                 mapComponent.highlightWarningAreas(decoded);
-
-                // Notification Check
-                NotificationService.checkAndNotify(decoded);
             }
         } catch (err) {
             console.error("Warning fetch failed:", err);

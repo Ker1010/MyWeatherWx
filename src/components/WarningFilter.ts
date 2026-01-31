@@ -1,5 +1,4 @@
 import { LanguageService } from '../services/LanguageService';
-import { NotificationService } from '../services/NotificationService';
 import { RainViewerService } from '../services/RainViewerService';
 
 export type WarningCategory = 'first' | 'second' | 'third' | 'alert' | 'thunderstorm_warning' | 'thunderstorm_watch' | 'sea_level' | 'no_advisory' | 'continuous_rain' | 'tropical_cyclone';
@@ -44,15 +43,6 @@ export class WarningFilter {
         { id: 'tropical_cyclone', label: 'Tropical Cyclone' },
         { id: 'alert', label: 'Alert' },
     ];
-
-    private static STATES = [
-        "Perlis", "Kedah", "Pulau Pinang", "Perak", "Selangor", 
-        "Kuala Lumpur", "Putrajaya", "Negeri Sembilan", "Melaka", 
-        "Johor", "Pahang", "Terengganu", "Kelantan", "Sabah", 
-        "Sarawak", "Labuan"
-    ];
-
-    private regionMapping: Record<string, string[]> = {};
 
     constructor(
         onChange: (state: FilterState) => void, 
@@ -109,16 +99,6 @@ export class WarningFilter {
         
         // Initial trigger
         this.onChange(this.state);
-
-        // Fetch region mapping
-        fetch('/region_mapping.json')
-            .then(res => res.json())
-            .then(data => {
-                this.regionMapping = data;
-                // If the panel is open and on settings, calling render might be nice, 
-                // but usually user isn't there yet.
-            })
-            .catch(err => console.error("Failed to load region mapping", err));
     }
 
     private applyPlaybackSetting() {
@@ -205,30 +185,6 @@ export class WarningFilter {
                         ${t('show_playback_controls')}
                     </label>
                 </div>
-                
-                
-                <div class="filter-section" style="display: block !important;">
-                    <h5>${t('notifications')}</h5>
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="notification-toggle" ${NotificationService.getSettings().enabled ? 'checked' : ''}>
-                        <span class="checkmark"></span>
-                        ${t('enable_notifications')}
-                    </label>
-                    <div id="state-selector-container" style="margin-top: 10px; display: ${NotificationService.getSettings().enabled ? 'block' : 'none'};">
-                        <label for="state-select" style="font-size: 0.9em; margin-bottom: 5px; display: block; color: var(--text-secondary);">${t('select_state')}</label>
-                        <select id="state-select" class="form-select" style="width: 100%; padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.1); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.2);">
-                            <option value="">-- ${t('select_state')} --</option>
-                            ${WarningFilter.STATES.map(s => `<option value="${s}" ${NotificationService.getSettings().state === s ? 'selected' : ''}>${s}</option>`).join('')}
-                        </select>
-                        
-                        <div id="district-selector-container" style="margin-top: 10px; display: ${NotificationService.getSettings().state ? 'block' : 'none'};">
-                            <label for="district-select" style="font-size: 0.9em; margin-bottom: 5px; display: block; color: var(--text-secondary);">${t('select_district')}</label>
-                            <select id="district-select" class="form-select" style="width: 100%; padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.1); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.2);">
-                                ${this.renderDistrictOptions(NotificationService.getSettings().state, NotificationService.getSettings().district, t)}
-                            </select>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="filter-section">
                     <h5>${t('storage')}</h5>
@@ -303,39 +259,6 @@ export class WarningFilter {
             localStorage.setItem('playback_ui_enabled', checked.toString());
             this.applyPlaybackSetting();
             this.applyPlaybackSetting();
-        });
-
-        // Notification Toggles
-        const notifToggle = this.container.querySelector('#notification-toggle');
-        const stateSelect = this.container.querySelector('#state-select');
-        const stateContainer = this.container.querySelector('#state-selector-container') as HTMLElement;
-
-        notifToggle?.addEventListener('change', async (e) => {
-            const checked = (e.target as HTMLInputElement).checked;
-            if (checked) {
-                const granted = await NotificationService.enableNotifications();
-                if (!granted) {
-                    (e.target as HTMLInputElement).checked = false;
-                    alert(this.languageService.translate('notification_permission_denied'));
-                    return;
-                }
-                if (stateContainer) stateContainer.style.display = 'block';
-            } else {
-                NotificationService.disableNotifications();
-                if (stateContainer) stateContainer.style.display = 'none';
-            }
-        });
-
-        stateSelect?.addEventListener('change', (e) => {
-            const val = (e.target as HTMLSelectElement).value;
-            NotificationService.setState(val);
-            this.render(); // Re-render to update district list
-        });
-        
-        const districtSelect = this.container.querySelector('#district-select');
-        districtSelect?.addEventListener('change', (e) => {
-            const val = (e.target as HTMLSelectElement).value;
-            NotificationService.setDistrict(val);
         });
 
         // Clear Data
@@ -487,24 +410,7 @@ export class WarningFilter {
 
         this.onChange(this.state);
     }
-    private renderDistrictOptions(state: string, currentDistrict: string, t: (key: string) => string): string {
-        if (!state) return `<option value="">-- ${t('select_district')} --</option>`;
-
-        const normalizedState = state.toLowerCase().replace(/\s+/g, '-');
-
-        const districts = this.regionMapping[normalizedState] || [];
-        
-        // Sort districts A-Z
-        districts.sort();
-
-        // Title Case Helper
-        const toTitleCase = (str: string) => str.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-        const allOption = `<option value="">${t('all_state')} ${state}</option>`;
-        const opts = districts.map(d => `<option value="${d}" ${currentDistrict === d ? 'selected' : ''}>${toTitleCase(d)}</option>`).join('');
-        
-        return allOption + opts;
-    }
+    
     private renderForecastDays(): string {
         let html = '';
         for (let i = 0; i < 7; i++) {
