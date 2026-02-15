@@ -6,6 +6,14 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: 'v1.5',
+    date: '2026-02-15',
+    changes: [
+      'Remove Radar Color Scheme',
+      'More area coverage',
+    ]
+  },
+  {
     version: 'v1.4',
     date: '2026-01-31',
     changes: [

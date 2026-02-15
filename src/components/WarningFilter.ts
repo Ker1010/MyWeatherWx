@@ -171,13 +171,6 @@ export class WarningFilter {
                 </div>
 
                 <div class="filter-section">
-                    <h5>${t('radar_color')}</h5>
-                    <select id="radar-color-select" class="form-select" style="width: 100%; padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid rgba(255,255,255,0.2);">
-                        ${RainViewerService.COLOR_SCHEMES.map(s => `<option value="${s.id}" ${RainViewerService.colorScheme === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
-                    </select>
-                </div>
-
-                <div class="filter-section">
                     <h5>${t('ui_settings')}</h5>
                     <label class="checkbox-container">
                         <input type="checkbox" id="playback-ui-toggle" ${this.getPlaybackSetting() ? 'checked' : ''}>
@@ -294,12 +287,6 @@ export class WarningFilter {
                 if (this.onForecastSelect) this.onForecastSelect(index);
                 this.render();
             });
-        });
-        // Radar Color Select
-        const radarColorSelect = this.container.querySelector('#radar-color-select');
-        radarColorSelect?.addEventListener('change', (e) => {
-            const val = parseInt((e.target as HTMLSelectElement).value);
-            if (this.onColorSchemeChange) this.onColorSchemeChange(val);
         });
     }
 
