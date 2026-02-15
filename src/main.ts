@@ -444,11 +444,7 @@ mapComponent.onLoad(async () => {
             rawWarningViewer.show(currentWarnings);
         },
         handleForecastSelection, // Pass the forecast selection callback
-        DEFAULT_ACTIVE_WARNINGS,
-        (schemeId) => {
-             mapComponent.setRainViewerColorScheme(schemeId);
-             localStorage.setItem('rainviewer_color_scheme', schemeId.toString());
-        }
+        DEFAULT_ACTIVE_WARNINGS
     );
 
     // Initialize RainViewer Color Scheme
