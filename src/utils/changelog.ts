@@ -9,6 +9,7 @@ export const changelogData: ChangelogEntry[] = [
     version: 'v1.5',
     date: '2026-02-15',
     changes: [
+      'Localized Forecast Descriptions',
       'Remove Radar Color Scheme',
       'More area coverage',
     ]
