@@ -1,5 +1,4 @@
 import { LanguageService } from '../services/LanguageService';
-import { RainViewerService } from '../services/RainViewerService';
 
 export type WarningCategory = 'first' | 'second' | 'third' | 'alert' | 'thunderstorm_warning' | 'thunderstorm_watch' | 'sea_level' | 'no_advisory' | 'continuous_rain' | 'tropical_cyclone';
 
@@ -19,7 +18,6 @@ export class WarningFilter {
     private onChange: (state: FilterState) => void;
     private onToggleRawView?: () => void;
     private onForecastSelect?: (dayIndex: number | null) => void;
-    private onColorSchemeChange?: (id: number) => void;
 
 
     // Ordered categories for display
@@ -48,13 +46,11 @@ export class WarningFilter {
         onChange: (state: FilterState) => void, 
         onToggleRawView?: () => void,
         onForecastSelect?: (dayIndex: number | null) => void,
-        defaultActiveCategories?: string[],
-        onColorSchemeChange?: (id: number) => void
+        defaultActiveCategories?: string[]
     ) {
         this.onChange = onChange;
         this.onToggleRawView = onToggleRawView;
         this.onForecastSelect = onForecastSelect;
-        this.onColorSchemeChange = onColorSchemeChange;
         this.languageService = LanguageService.getInstance();
         
         // Initialize with provided defaults or all IDs
