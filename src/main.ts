@@ -109,7 +109,15 @@ function renderChangelog() {
                 <span class="entry-date">${entry.date}</span>
             </div>
             <ul class="entry-list">
-                ${entry.changes.map(change => `<li>${change}</li>`).join('')}
+                ${entry.changes.map(change => {
+                    if (typeof change === 'string') {
+                        return `<li>${change}</li>`;
+                    }
+                    return `<li>
+                        ${change.text}
+                        ${change.note ? `<span class="changelog-note">Note: ${change.note}</span>` : ''}
+                    </li>`;
+                }).join('')}
             </ul>
         </div>
     `).join('');

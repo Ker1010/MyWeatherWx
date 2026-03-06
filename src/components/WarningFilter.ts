@@ -131,7 +131,7 @@ export class WarningFilter {
             </div>
 
 
-            <div class="filter-content tab-content" data-tab="filter" style="${this.activeTab === 'filter' ? '' : 'display: none;'}">
+            <div class="filter-content tab-content ${this.activeTab === 'filter' ? 'active' : ''}" data-tab="filter">
                 <div class="filter-section">
                     <h5>${t('actions')}</h5>
                     <button id="view-raw-btn" class="action-btn btn btn-primary w-100">
@@ -144,7 +144,7 @@ export class WarningFilter {
                 </div>
             </div>
 
-            <div class="filter-content tab-content" data-tab="forecast" style="${this.activeTab === 'forecast' ? '' : 'display: none;'}">
+            <div class="filter-content tab-content ${this.activeTab === 'forecast' ? 'active' : ''}" data-tab="forecast">
                  <div class="filter-section">
                     <h5>${t('seven_days_forecast')}</h5>
                     <div class="forecast-days-list" style="display: flex; flex-direction: column; gap: 8px;">
@@ -155,7 +155,7 @@ export class WarningFilter {
 
 
 
-            <div class="filter-content tab-content" data-tab="settings" style="${this.activeTab === 'settings' ? '' : 'display: none;'}">
+            <div class="filter-content tab-content ${this.activeTab === 'settings' ? 'active' : ''}" data-tab="settings">
 
                 <div class="filter-section">
                     <h5>${t('language')}</h5>

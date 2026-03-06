@@ -521,7 +521,8 @@ export class MapComponent {
       tiles: [
         RainViewerService.getTileUrl(timestamp, 256)
       ],
-      tileSize: 256
+      tileSize: 256,
+      maxzoom: 7
     });
 
     const beforeLayer = this.map.getLayer("malaysia-outline")

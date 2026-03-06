@@ -107,6 +107,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .warning-filter {
@@ -114,19 +115,21 @@ body {
   top: 20px;
   right: 20px;
   width: 300px;
+  max-width: 300px;
   max-height: 90vh; /* Prevent overflow on small screens */
   z-index: 1000;
   padding: 15px;
   color: #e0e0e0;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex; /* Flex container for header/tabs/content */
   flex-direction: column;
+  overflow: hidden;
 }
 
 .warning-filter.collapsed {
-  width: auto;
   height: auto;
   overflow: hidden;
+  max-width: 44px;
   padding: 10px;
 }
 
@@ -164,7 +167,12 @@ body {
 }
 
 .warning-filter.collapsed .filter-tabs {
-  display: none;
+  opacity: 0;
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  pointer-events: none;
 }
 
 /* Tab Content */
@@ -172,18 +180,26 @@ body {
   flex: 1;
   overflow-y: auto;
   padding-right: 4px; /* Space for scrollbar */
+  transition: opacity 0.3s ease, margin 0.3s ease, max-height 0.3s ease;
+  opacity: 1;
+  max-height: 70vh;
+}
+
+.tab-content:not(.active) {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+  pointer-events: none;
 }
 
 .warning-filter.collapsed .tab-content {
-  display: none !important;
-}
-
-.warning-filter.collapsed .filter-header h3 {
-  display: none;
-}
-
-.warning-filter.collapsed .filter-header {
-  margin-bottom: 0;
+  opacity: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  pointer-events: none;
 }
 
 .filter-header {
@@ -192,6 +208,7 @@ body {
   align-items: center;
   margin-bottom: 12px;
   flex-shrink: 0;
+  transition: margin-bottom 0.3s;
 }
 
 .filter-header h3 {
@@ -200,6 +217,19 @@ body {
   font-weight: 600;
   color: #fff;
   letter-spacing: 0.5px;
+  transition: opacity 0.2s, max-width 0.3s ease;
+  max-width: 200px;
+  white-space: nowrap;
+}
+
+.warning-filter.collapsed .filter-header h3 {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+}
+
+.warning-filter.collapsed .filter-header {
+  margin-bottom: 0;
 }
 
 .icon-btn {
@@ -320,6 +350,7 @@ body {
 .warning-popup {
   color: #d0d0d0 !important;
   max-width: 30% !important;
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 
@@ -328,6 +359,7 @@ body {
   border-radius: 10px;
   background: none !important;
   box-shadow: none !important;
+  transition: all 0.3s ease;
 }
 
 /* Raw Warning Viewer */
@@ -649,6 +681,7 @@ body {
       left: 20px;
       right: 20px;
       width: auto;
+      max-width: none;
       max-height: 50vh; /* Allow more space */
       padding-bottom: max(16px, env(safe-area-inset-bottom));
       
@@ -664,6 +697,8 @@ body {
       align-items: center;
       gap: 10px;
       max-height: 60px; /* Exact height for collapsed state */
+      max-width: none;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
   }
 
   .warning-filter .filter-header {
@@ -684,18 +719,12 @@ body {
       margin: 0;
       white-space: nowrap;
       opacity: 1; /* Ensure visible */
-  }
-  
-  .warning-filter .filter-content {
-      opacity: 1;
-      transition: opacity 0.3s ease;
-      overflow-y: auto; /* Scroll content internal */
+      max-width: 100%;
   }
 
-  .warning-filter.collapsed .filter-content {
-      opacity: 0;
-      pointer-events: none;
-      max-height: 0;
+  .warning-filter .tab-content {
+      /* Mobile active reset */
+      transition: opacity 0.3s ease, margin 0.3s ease, max-height 0.3s ease;
   }
 
   /* Make popups more mobile friendly */
@@ -833,6 +862,13 @@ body {
   color: #ccc;
   margin-bottom: 6px;
   line-height: 1.4;
+}
+
+.changelog-note {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
 }
 
 .entry-list li::marker {
@@ -1218,7 +1254,7 @@ body {
 }
 
 /* Button Press Effect */
-button:active, .icon-btn:active {
+button:active, .icon-btn:active, .location-btn:active, .rain-btn:active, .checkbox-container:active {
   transform: scale(0.95);
 }
 
@@ -1246,8 +1282,9 @@ button:active, .icon-btn:active {
 
 
 /* Smooth transitions for interactive elements */
-a, button, input[type="range"]::-webkit-slider-thumb {
-  transition: all 0.2s ease;
+a, button, input[type="range"]::-webkit-slider-thumb, 
+.checkbox-container, .checkmark, .tab-btn, .icon-btn, .location-btn, .rain-btn {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 .modal-footer {
   padding: 16px 20px;

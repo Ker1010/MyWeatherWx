@@ -1,10 +1,23 @@
+export type ChangelogItem = string | { text: string; note?: string };
+
 export interface ChangelogEntry {
   version: string;
   date: string;
-  changes: string[];
+  changes: ChangelogItem[];
 }
 
 export const changelogData: ChangelogEntry[] = [
+  {
+    version: 'v1.6',
+    date: '2026-03-06',
+    changes: [
+      'Some Animations improvements',
+      {
+        text: 'Fix RainViewer Zoom Error',
+        note: 'due to API max zoom level changed. Might look into another overlap provider in the future'
+      }
+    ]
+  },
   {
     version: 'v1.5',
     date: '2026-02-15',
