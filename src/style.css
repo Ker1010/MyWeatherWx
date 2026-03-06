@@ -350,9 +350,12 @@ body {
 .warning-popup {
   color: #d0d0d0 !important;
   max-width: 30% !important;
-  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.warning-popup .maplibregl-popup-content {
+  backdrop-filter: blur(10px);
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
 .maplibregl-popup-content {
   padding: 0px !important;
