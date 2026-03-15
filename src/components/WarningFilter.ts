@@ -218,9 +218,6 @@ export class WarningFilter {
                      if (this.onForecastSelect) this.onForecastSelect(null);
                      this.activeForecastDay = null; // Reset selection visualization
                 } 
-                // If switching TO forecast, wait for user to select day? 
-                // Or auto select day 0? 
-                // Let's force user to select for now, or just show list. 
                 
                 this.render(); // Re-render to update UI state
             });

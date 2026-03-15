@@ -42,6 +42,7 @@ export interface WarningIssue {
 }
 
 export class WeatherWarningService {
+  //Todo: Custom server, Don't directly access data.gov.my avoid rate limiting
   private static API_URL = "https://api.data.gov.my/weather/warning";
 
   static async fetchData(): Promise<WeatherWarningData | null> {
