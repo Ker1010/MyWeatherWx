@@ -346,7 +346,7 @@ export class MapComponent {
 
 
       const popupContent = `
-                <div class="glass-panel p-2" style="font-family: sans-serif;">
+                <div class="warning-glass-panel p-2" style="font-family: sans-serif;">
                     <h3 style="margin: 0 0 8px 0; font-size: 16px; border-bottom: 2px solid ${color}; padding-bottom: 4px;">${
                       heading
                     }</h3>

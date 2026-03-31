@@ -17,6 +17,7 @@ export class RainViewerService {
     ];
 
     private static API_URL = 'https://api.rainviewer.com/public/weather-maps.json';
+    private static timeToPathMap = new Map<number, string>();
 
     static async fetchData(): Promise<RainViewerData | null> {
         try {
@@ -24,7 +25,17 @@ export class RainViewerService {
             if (!response.ok) {
                 throw new Error(`RainViewer API error: ${response.status}`);
             }
-            return await response.json();
+            const data = await response.json();
+            
+            // Map the parsed time to the newer path hashes
+            if (data?.radar?.past) {
+                data.radar.past.forEach((f: any) => this.timeToPathMap.set(f.time, f.path));
+            }
+            if (data?.radar?.nowcast) {
+                data.radar.nowcast.forEach((f: any) => this.timeToPathMap.set(f.time, f.path));
+            }
+            
+            return data;
         } catch (error) {
             console.error("Failed to fetch RainViewer data:", error);
             return null;
@@ -32,7 +43,12 @@ export class RainViewerService {
     }
 
     static getTileUrl(timestamp: number, size: number = 256): string {
-        return `https://tilecache.rainviewer.com/v2/radar/${timestamp}/${size}/{z}/{x}/{y}/2/1_1.png`;
+        const path = this.timeToPathMap.get(timestamp);
+        if (path) {
+            return `https://tilecache.rainviewer.com${path}/${size}/{z}/{x}/{y}/${this.colorScheme}/1_1.png`;
+        }
+        // Fallback for older timestamps if missing from current dataset
+        return `https://tilecache.rainviewer.com/v2/radar/${timestamp}/${size}/{z}/{x}/{y}/${this.colorScheme}/1_1.png`;
     }
 
     private static hexToRgb(hex: string): { r: number, g: number, b: number } | null {
