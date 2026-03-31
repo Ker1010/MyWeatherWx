@@ -2,6 +2,7 @@ import './style.css';
 import { MapComponent } from './components/MapComponent';
 import { WarningFilter } from './components/WarningFilter';
 import { RawWarningViewer } from './components/RawWarningViewer';
+import { RainViewerService } from './services/RainViewerService';
 import { WeatherWarningService, WeatherWarningDecoder } from './services/WeatherWarning';
 import { ForecastService } from './services/ForecastService';
 
@@ -13,6 +14,9 @@ import { Snowfall } from './utils/Snowfall';
 
 const mapComponent = new MapComponent('map');
 const rawWarningViewer = new RawWarningViewer();
+
+
+
 
 let currentWarnings: any[] = [];
 
@@ -144,18 +148,18 @@ locationBtn?.addEventListener('click', () => {
 });
 
 
-// const rainToggleBtn = document.getElementById('rain-toggle-btn');
-// let rainViewerVisible = true;
+const rainToggleBtn = document.getElementById('rain-toggle-btn');
+let rainViewerVisible = true;
 
-// rainToggleBtn?.addEventListener('click', () => {
-//     rainViewerVisible = !rainViewerVisible;
-//     mapComponent.toggleRainViewerLayer(rainViewerVisible);
-//     if (rainViewerVisible) {
-//         rainToggleBtn.classList.add('active');
-//     } else {
-//         rainToggleBtn.classList.remove('active');
-//     }
-// });
+rainToggleBtn?.addEventListener('click', () => {
+    rainViewerVisible = !rainViewerVisible;
+    mapComponent.toggleRainViewerLayer(rainViewerVisible);
+    if (rainViewerVisible) {
+        rainToggleBtn.classList.add('active');
+    } else {
+        rainToggleBtn.classList.remove('active');
+    }
+});
 
 const playbackSlider = document.getElementById('playback-slider') as HTMLInputElement;
 const playPauseBtn = document.getElementById('play-pause-btn');
@@ -328,31 +332,51 @@ if (probeBtn) {
 }
 
 mapComponent.onLoad(async () => {
-    const initPlaybackTimeline = () => {
-        // Generate a synthetic timeline for MET Malaysia warning playback
-        // E.g., past 12 hours and future 12 hours at 30 min intervals
-        availableTimestamps = [];
-        const nowMs = Date.now();
-        const thirtyMinsMs = 30 * 60 * 1000;
-        
-        // Align to the nearest 30 mins
-        const alignedNow = Math.floor(nowMs / thirtyMinsMs) * thirtyMinsMs;
-        
-        for (let i = -24; i <= 24; i++) {
-            availableTimestamps.push(Math.floor((alignedNow + i * thirtyMinsMs) / 1000));
-        }
+    const fetchRainViewer = async () => {
+        try {
+            const data = await RainViewerService.fetchData();
+            if (data?.radar?.past?.length || data?.radar?.nowcast?.length) {
+                const past = data.radar.past || [];
 
-        if (playbackSlider) {
-            playbackSlider.max = (availableTimestamps.length - 1).toString();
-            playbackSlider.disabled = false;
-        }
+                
+                // Combine and sort timestamps
+                // Only use past data for the timeline
+                const allFrames = [...past].sort((a, b) => a.time - b.time);
+                availableTimestamps = allFrames.map(f => f.time);                
+                if (availableTimestamps.length > 0) {
+                    // Initialize Slider
+                    if (playbackSlider) {
+                        playbackSlider.max = (availableTimestamps.length - 1).toString();
+                        playbackSlider.disabled = false;
+                    }
 
-        const nowIndex = 24; // The index representing "Now"
-        updatePlaybackState(nowIndex);
+                    // Start at the latest PAST frame
+                    let startIndex = past.length > 0 ? past.length - 1 : availableTimestamps.length - 1;
+                    
+                    if (past.length > 0) {
+                        const latestPastTimestamp = past[past.length - 1].time;
+                        mapComponent.setLatestRadarTimestamp(latestPastTimestamp);
+                    } else if (availableTimestamps.length > 0) {
+                        // Fallback if no past frames?
+                        mapComponent.setLatestRadarTimestamp(availableTimestamps[availableTimestamps.length - 1]);
+                    }
+
+                    // Initial load - no debounce needed
+                    updatePlaybackState(startIndex);
+                }
+            }
+        } catch (err) {
+            console.error("RainViewer fetch failed:", err);
+            if (playbackTimeDisplay) playbackTimeDisplay.innerText = "Error";
+        }
     };
+    
+    // ... rest of the file
+    // run immediately
+    await fetchRainViewer();
 
-    initPlaybackTimeline();
-    setInterval(initPlaybackTimeline, 30 * 60 * 1000); // refresh timeline occasionally
+    // refresh every 5 minutes (standard RainViewer update cycle is ~10 min)
+    setInterval(fetchRainViewer, 5 * 60 * 1000);
 
     // warnings (keep as-is)
     const fetchWarnings = async () => {
@@ -430,7 +454,14 @@ mapComponent.onLoad(async () => {
         handleForecastSelection, // Pass the forecast selection callback
         DEFAULT_ACTIVE_WARNINGS
     );
+
+    // Initialize RainViewer Color Scheme
+    const savedScheme = localStorage.getItem('rainviewer_color_scheme');
+    if (savedScheme) {
+        mapComponent.setRainViewerColorScheme(parseInt(savedScheme));
+    }
 });
+
 
 // Initialize Language Service Connection
 const languageService = LanguageService.getInstance();

@@ -5,7 +5,7 @@ import type { DecodedWarning } from "../services/WeatherWarning";
 import type { FilterState } from "./WarningFilter";
 import type { LightningStrike } from "../services/LightningService";
 import { LightningService } from "../services/LightningService";
-
+import { RainViewerService } from "../services/RainViewerService";
 import { LanguageService } from "../services/LanguageService";
 import type { Language } from "../services/LanguageService";
 
@@ -346,7 +346,7 @@ export class MapComponent {
 
 
       const popupContent = `
-                <div class="popout-glass-panel p-2" style="font-family: sans-serif;">
+                <div class="glass-panel p-2" style="font-family: sans-serif;">
                     <h3 style="margin: 0 0 8px 0; font-size: 16px; border-bottom: 2px solid ${color}; padding-bottom: 4px;">${
                       heading
                     }</h3>
@@ -507,11 +507,116 @@ export class MapComponent {
     }
   }
 
+  private latestRadarTimestamp: number = 0;
+
+  public setLatestRadarTimestamp(timestamp: number) {
+    this.latestRadarTimestamp = timestamp;
+  }
+
+  public addRainViewerLayer(timestamp: number) {
+    if (this.map.getSource("rainviewer")) return;
+
+    this.map.addSource("rainviewer", {
+      type: "raster",
+      tiles: [
+        RainViewerService.getTileUrl(timestamp, 256)
+      ],
+      tileSize: 256,
+      maxzoom: 7
+    });
+
+    const beforeLayer = this.map.getLayer("malaysia-outline")
+      ? "malaysia-outline"
+      : undefined;
+
+    this.map.addLayer(
+      {
+        id: "rainviewer-radar",
+        type: "raster",
+        source: "rainviewer",
+        paint: {
+          "raster-opacity": 0.8,
+          "raster-fade-duration": 0,
+        },
+        layout: {
+          visibility: "visible",
+        },
+      },
+      beforeLayer
+    );
+  }
+
+  public toggleRainViewerLayer(visible: boolean) {
+    if (!this.map.getLayer("rainviewer-radar")) return;
+    this.map.setLayoutProperty(
+      "rainviewer-radar",
+      "visibility",
+      visible ? "visible" : "none"
+    );
+    // Lightning also toggles with rain layout per previous request
+    if (this.map.getLayer("lightning-layer")) {
+        this.map.setLayoutProperty(
+            "lightning-layer",
+            "visibility",
+            visible ? "visible" : "none"
+        );
+    }
+  }
+
+  private updateRainViewerLayer(timestamp: number) {
+    const layerId = "rainviewer-radar";
+    const sourceId = "rainviewer";
+    
+    let wasVisible = true;
+
+    if (this.map.getSource(sourceId)) {
+       if (this.map.getLayer(layerId)) {
+         // Check if it was visible
+         const visibility = this.map.getLayoutProperty(layerId, "visibility");
+         wasVisible = visibility !== "none";
+         this.map.removeLayer(layerId);
+       }
+       this.map.removeSource(sourceId);
+    }
+
+    // "if playback is time is faster then now then show the last one own data"
+    // Use the latest known past timestamp if we are in the future
+    const safeTimestamp = (this.latestRadarTimestamp && timestamp > this.latestRadarTimestamp) 
+        ? this.latestRadarTimestamp 
+        : timestamp;
+
+    this.currentRadarTimestamp = safeTimestamp;
+    this.addRainViewerLayer(safeTimestamp);
+    
+    // Restore visibility
+    if (!wasVisible) {
+        this.map.setLayoutProperty(layerId, "visibility", "none");
+    }
+  }
+
+  public setRainViewerColorScheme(schemeId: number) {
+      RainViewerService.colorScheme = schemeId;
+      // Refresh with current display time (or latest radar time used for display)
+      // We can basically re-trigger updateRainViewerLayer with the current meaningful timestamp.
+      // But updateRainViewerLayer takes a timestamp.
+      // We need to know what the *current* timestamp showing is.
+      // We can use this.currentDisplayTime / 1000 (convert back to seconds).
+      
+      this.updateRainViewerLayer(this.currentDisplayTime / 1000);
+  }
+
+
+
+
+
   private currentDisplayTime: number = Date.now();
 
   public setDisplayTime(timestamp: number) {
     // For warnings, if time is future, just show current (cap at Date.now())
     this.currentDisplayTime = Math.min(timestamp * 1000, Date.now());
+    
+    // For radar, allow future timestamps (Nowcast)
+    this.updateRainViewerLayer(timestamp);
     this.renderWarnings();
   }
 
@@ -948,7 +1053,57 @@ export class MapComponent {
   }
 
   private async getRadarValueAt(lon: number, lat: number): Promise<string | null> {
-      return null;
+      // Use Zoom Level 6 for sampling (good balance of detail and cache hit rate)
+      // We could use current map zoom, but that makes cache thrashing likely. 
+      // Z=6 covers a large area.
+      const SAMPLE_ZOOM = 6;
+      
+      const { x, y, pixelX, pixelY } = this.getTileCoords(lat, lon, SAMPLE_ZOOM);
+      
+      const timestamp = this.currentRadarTimestamp;
+      if (!timestamp) return null;
+
+      const url = `https://tilecache.rainviewer.com/v2/radar/${timestamp}/256/${SAMPLE_ZOOM}/${x}/${y}/${RainViewerService.colorScheme}/1_1.png`;
+
+      // Check Cache
+      let ctx = this.probeCache?.ctx;
+      
+      if (!this.probeCache || this.probeCache.url !== url) {
+          // Verify we have a timestamp
+          if (!timestamp) return null;
+          
+          try {
+              const img = new Image();
+              img.crossOrigin = "Anonymous";
+              img.src = url;
+              
+              await new Promise((resolve, reject) => {
+                  img.onload = resolve;
+                  img.onerror = reject;
+              });
+
+              const canvas = document.createElement('canvas');
+              canvas.width = 256;
+              canvas.height = 256;
+              ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+              ctx.drawImage(img, 0, 0);
+
+              this.probeCache = { x, y, z: SAMPLE_ZOOM, url, img, canvas, ctx };
+          } catch (e) {
+              console.warn("Failed to load probe tile", e);
+              return null;
+          }
+      }
+
+      if (!ctx) return null;
+
+      // Read pixel
+      const p = ctx.getImageData(pixelX, pixelY, 1, 1).data;
+      // p is [r, g, b, a]
+      
+      if (p[3] === 0) return null; // Transparent
+
+      return RainViewerService.getDbz(p[0], p[1], p[2]);
   }
 
   private onMouseUp() {

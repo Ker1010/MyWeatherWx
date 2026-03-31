@@ -83,9 +83,9 @@
     <button id="draw-btn" class="draw-btn icon-btn" aria-label="Draw" title="Toggle Drawing (Pen)">
       <i class="bi bi-pen-fill"></i>
     </button>
-    <!-- <button id="probe-btn" class="probe-btn icon-btn" aria-label="Probe" title="Toggle Probe Tool">
+    <button id="probe-btn" class="probe-btn icon-btn" aria-label="Probe" title="Toggle Probe Tool">
       <i class="bi bi-eyedropper"></i>
-    </button> -->
+    </button>
 
   </div>
 
@@ -95,11 +95,10 @@
   </button>
 
   <!-- Rain Toggle Button -->
-  <!-- <button id="rain-toggle-btn" class="glass-panel rain-btn active" title="Toggle Rain Radar"
+  <button id="rain-toggle-btn" class="glass-panel rain-btn active" title="Toggle Rain Radar"
     aria-label="Toggle Rain Radar">
     <i class="bi bi-cloud-rain-fill"></i>
-  </button> --> 
-  <!-- Temporarily removed until we can find a better radar source -->
+  </button>
 
   <!-- About/Info Panel -->
   <div class="about-panel glass-panel collapsed">
@@ -123,6 +122,8 @@
         <label>Data Sources</label>
         <div class="source-tags">
           <a href="https://www.met.gov.my/" class="source-tag" target="_blank" rel="noopener noreferrer">MetMalaysia</a>
+          <a href="https://www.rainviewer.com/" class="source-tag" target="_blank"
+            rel="noopener noreferrer">RainViewer</a>
           <a href="https://www.blitzortung.org/en/contact.php" class="source-tag" target="_blank"
             rel="noopener noreferrer">Blitzortung</a>
           <a href="https://github.com/mptwaktusolat/jakim.geojson/" class="source-tag" target="_blank"
@@ -157,9 +158,11 @@
 
         <div class="faq-item">
           <details>
-            <summary>Why is weather radar data not longer available?</summary>
+            <summary>Why use RainViewer instead of Windy?</summary>
             <p>
-              RainViewer provides radar data but does not offer a public API. We are exploring alternative sources for weather radar data soon.
+              RainViewer provides a free API for radar data, whereas Windy does not support
+              the specific map overlays we need. More MET Malaysia information on
+              data in a future update.
             </p>
           </details>
         </div>

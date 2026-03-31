@@ -190,14 +190,14 @@
         "cn": "政府数据仅包含文本。我们根据描述手动映射，可能会导致与官方边界有轻微不符。"
     },
     "faq_title_rainviewer": {
-        "en": "Why is weather radar data not longer available?",
-        "bm": "Mengapa data radar cuaca tidak lagi tersedia?",
-        "cn": "为什么天气雷达数据不再可用？"
+        "en": "Why use RainViewer instead of Windy?",
+        "bm": "Mengapa menggunakan RainViewer dan bukan Windy?",
+        "cn": "为什么使用 RainViewer 而不是 Windy？"
     },
     "faq_text_rainviewer": {
-        "en": "RainViewer has shutdown Public API. We are exploring alternative sources for weather radar data soon. More MET Malaysia information on data in a future update.",
-        "bm": "RainViewer telah menutup API Publik. Kami sedang mencari sumber alternatif untuk data radar cuaca. Informasi lebih lanjut tentang data MET Malaysia akan tersedia dalam pembaruan mendatang.",
-        "cn": "RainViewer已关闭公共API。我们正在探索天气雷达数据的替代来源。有关MET马来西亚数据的更多信息将在未来的更新中提供。"
+        "en": "RainViewer provides a free API for radar data, whereas Windy does not support the specific map overlays we need. More MET Malaysia information on data in a future update.",
+        "bm": "RainViewer menyediakan API percuma untuk data radar, manakala Windy tidak menyokong lapisan peta khusus yang kami perlukan. Maklumat lanjut mengenai data MET Malaysia dalam kemas kini akan datang.",
+        "cn": "RainViewer 提供免费的雷达数据 API，而 Windy 不支持我们需要的特定地图覆盖。更多关于 MET Malaysia 数据的信息将在未来更新中提供。"
     },
     "disclaimer_title": {
         "en": "Disclaimer:",

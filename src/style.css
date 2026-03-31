@@ -99,25 +99,16 @@ body {
   transform: scale(0.95);
 }
 
-.popout-glass-panel {
-  background: rgba(30, 30, 35, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 /* Warning Filter Component */
 .glass-panel {
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
   background: rgba(30, 30, 35, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 
 .warning-filter {
   position: absolute;
@@ -361,10 +352,8 @@ body {
   max-width: 30% !important;
 }
 
-
 .warning-popup .maplibregl-popup-content {
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

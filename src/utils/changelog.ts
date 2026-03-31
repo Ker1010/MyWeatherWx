@@ -8,14 +8,6 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
-    version: 'v1.8',
-    date: '2026-03-31',
-    changes: [
-      'Remove Rainviewer',
-      'Fix Ui issue'
-    ]
-  },
-  {
     version: 'v1.7',
     date: '2026-03-15',
     changes: [
