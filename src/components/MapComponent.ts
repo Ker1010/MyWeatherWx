@@ -546,17 +546,14 @@ private newParticle(w: number, h: number): Particle {
 }
 
 
-private interpolateWind(x: number, y: number): { u: number; v: number; speed: number } | null {
-    // Convert screen px → lng/lat
-    const lngLat = this.map.unproject([x, y]);
-
+private interpolateWind(lng: number, lat: number): { u: number; v: number; speed: number } | null {
     if (!this.windField.length) return null;
 
     // 1. FAST CULLING: Check if the particle is inside your WindService bounds
     // We add a 0.5 degree margin so particles don't cut off harshly at the exact borders
     const margin = 0.5; 
-    const inPM = (lngLat.lat >= 1.2 - margin && lngLat.lat <= 7.3 + margin && lngLat.lng >= 99.6 - margin && lngLat.lng <= 104.5 + margin);
-    const inEM = (lngLat.lat >= 0.8 - margin && lngLat.lat <= 7.8 + margin && lngLat.lng >= 109.5 - margin && lngLat.lng <= 119.3 + margin);
+    const inPM = (lat >= 1.2 - margin && lat <= 7.3 + margin && lng >= 99.6 - margin && lng <= 104.5 + margin);
+    const inEM = (lat >= 0.8 - margin && lat <= 7.8 + margin && lng >= 109.5 - margin && lng <= 119.3 + margin);
 
     // If outside Peninsular AND outside East Malaysia, kill the particle
     if (!inPM && !inEM) {
@@ -564,25 +561,55 @@ private interpolateWind(x: number, y: number): { u: number; v: number; speed: nu
     }
 
     // Find nearest neighbours by distance
-    let nearest = this.windField
-        .map(d => {
-            const dx = d.longitude - lngLat.lng;
-            const dy = d.latitude  - lngLat.lat;
-            return { d: dx * dx + dy * dy, data: d };
-        })
-        .sort((a, b) => a.d - b.d)
-        .slice(0, 4);
+    let n1d = Infinity, n1data = null as any;
+    let n2d = Infinity, n2data = null as any;
+    let n3d = Infinity, n3data = null as any;
+    let n4d = Infinity, n4data = null as any;
+
+    for (let i = 0; i < this.windField.length; i++) {
+        const d_data = this.windField[i];
+        const dx = d_data.longitude - lng;
+        const dy = d_data.latitude  - lat;
+        const d = dx * dx + dy * dy;
+
+        if (d < n4d) {
+            if (d < n1d) {
+                n4d = n3d; n4data = n3data;
+                n3d = n2d; n3data = n2data;
+                n2d = n1d; n2data = n1data;
+                n1d = d; n1data = d_data;
+            } else if (d < n2d) {
+                n4d = n3d; n4data = n3data;
+                n3d = n2d; n3data = n2data;
+                n2d = d; n2data = d_data;
+            } else if (d < n3d) {
+                n4d = n3d; n4data = n3data;
+                n3d = d; n3data = d_data;
+            } else {
+                n4d = d; n4data = d_data;
+            }
+        }
+    }
 
     // 2. DISTANCE CUTOFF: If even the nearest point is too far away 
     // (e.g., a particle over the ocean *between* PM and EM), kill it.
     // 2.0 squared degrees is roughly ~150km away
-    if (nearest[0].d > 2.0) { 
+    if (n1d > 2.0) { 
         return null;
     }
 
     // IDW (inverse distance weighting)
     let sumW = 0, sumU = 0, sumV = 0;
-    for (const n of nearest) {
+    const nearest = [
+        { d: n1d, data: n1data },
+        { d: n2d, data: n2data },
+        { d: n3d, data: n3data },
+        { d: n4d, data: n4data }
+    ];
+
+    for (let i = 0; i < 4; i++) {
+        const n = nearest[i];
+        if (!n.data) continue;
         const w = n.d < 1e-10 ? 1e10 : 1 / n.d;
         
         // (Includes the 180 degree fix from earlier!)
@@ -606,83 +633,72 @@ private speedToColor(speed: number): string {
 }
 
   private startWindAnimation() {
-      if (this.windAnimFrame) cancelAnimationFrame(this.windAnimFrame);
-      const ctx = this.windCtx!;
-      const canvas = this.windCanvas!;
+    if (this.windAnimFrame) cancelAnimationFrame(this.windAnimFrame);
 
-      const step = () => {
-          if (!this.isMapMoving) {
-              const w = canvas.width;
-              const h = canvas.height;
+    const step = () => {
+        if (!this.windCanvas || !this.windCtx) {
+            this.windAnimFrame = null;
+            return;
+        }
+        const ctx = this.windCtx;
+        const canvas = this.windCanvas;
 
-              // NEW CODE
-              // "destination-out" strictly subtracts alpha every frame, guaranteeing it hits 0
-              // Slower fade for longer, smoother tails
-              ctx.globalCompositeOperation = "destination-out";
-              // Lowered from 0.1 to 0.04. This means it takes longer for the trail to disappear.
-              ctx.fillStyle = "rgba(0, 0, 0, 0.15)"; 
-              ctx.fillRect(0, 0, w, h);
-              ctx.globalCompositeOperation = "source-over";
+        if (!this.isMapMoving) {
+            const w = canvas.width;
+            const h = canvas.height;
 
-              for (const p of this.particles) {
-                  // Project geo → screen
-                  const screen = this.map.project([p.lng, p.lat]);
+            ctx.globalCompositeOperation = "destination-out";
+            ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
+            ctx.fillRect(0, 0, w, h);
+            ctx.globalCompositeOperation = "source-over";
 
-                  // Respawn if off-screen
-                  if (screen.x < 0 || screen.x > w || screen.y < 0 || screen.y > h) {
-                      Object.assign(p, this.newParticle(w, h));
-                      continue;
-                  }
+            for (const p of this.particles) {
+                const screen = this.map.project([p.lng, p.lat]);
 
-                  const wind = this.interpolateWind(screen.x, screen.y);
-                  if (!wind) {
-                      Object.assign(p, this.newParticle(w, h));
-                      continue;
-                  }
+                if (screen.x < 0 || screen.x > w || screen.y < 0 || screen.y > h) {
+                    Object.assign(p, this.newParticle(w, h));
+                    continue;
+                }
 
-                  // Get the current zoom level of the map
-                  const currentZoom = this.map.getZoom();
+                const wind = this.interpolateWind(p.lng, p.lat);
+                if (!wind) {
+                    Object.assign(p, this.newParticle(w, h));
+                    continue;
+                }
 
-                  // Calculate a dynamic zoom factor. 
-                  // Note: Change '6' to whatever zoom level you were looking at when 
-                  // the speed originally looked perfect to you.
-                  const zoomFactor = Math.pow(2, currentZoom - 6); 
+                const currentZoom = this.map.getZoom();
+                const zoomFactor = Math.pow(2, currentZoom - 6);
+                const scale = 0.12 * zoomFactor;
 
-                  // Scale the speed dynamically. As you zoom out (lower zoom number), 
-                  // zoomFactor gets smaller, automatically slowing down the pixel movement.
-                  const scale = 0.12 * zoomFactor;
+                const nx = screen.x + wind.u * scale;
+                const ny = screen.y - wind.v * scale;
 
-                  const nx = screen.x + wind.u * scale;
-                  const ny = screen.y - wind.v * scale;
+                ctx.beginPath();
+                ctx.moveTo(screen.x, screen.y);
+                ctx.lineTo(nx, ny);
+                const color = this.speedToColor(wind.speed);
+                ctx.strokeStyle = color;
+                ctx.lineCap = "round";
+                ctx.lineWidth = wind.speed > 15 ? 1.5 : 0.8;
+                ctx.shadowBlur = 4;
+                ctx.stroke();
 
-                  // Draw trail
-                  ctx.beginPath();
-                  ctx.moveTo(screen.x, screen.y);
-                  ctx.lineTo(nx, ny);
-                  const color = this.speedToColor(wind.speed);
-                  ctx.strokeStyle = color;
-                  ctx.lineCap = "round";
-                  ctx.lineWidth = wind.speed > 15 ? 1.5 : 0.8;
-                  ctx.shadowBlur = 4;
-                  ctx.stroke();
+                const moved = this.map.unproject([nx, ny]);
+                p.lng = moved.lng;
+                p.lat = moved.lat;
+                p.speed = wind.speed;
+                p.age++;
 
-                  // Unproject moved screen pos back to geo
-                  const moved = this.map.unproject([nx, ny]);
-                  p.lng = moved.lng;
-                  p.lat = moved.lat;
-                  p.speed = wind.speed;
-                  p.age++;
+                if (p.age > p.maxAge) {
+                    Object.assign(p, this.newParticle(w, h));
+                }
+            }
+        }
+        this.windAnimFrame = requestAnimationFrame(step);
+    };
 
-                  if (p.age > p.maxAge) {
-                      Object.assign(p, this.newParticle(w, h));
-                  }
-              }
-          }
-          this.windAnimFrame = requestAnimationFrame(step);
-      };
-
-      this.windAnimFrame = requestAnimationFrame(step);
-  }
+    this.windAnimFrame = requestAnimationFrame(step);
+}
 
   public destroyWindLayer() {
       if (this.windAnimFrame) cancelAnimationFrame(this.windAnimFrame);
@@ -930,22 +946,25 @@ private speedToColor(speed: number): string {
   }
 
   public toggleWindLayer(visible: boolean) {
-      localStorage.setItem('weather_wind_visible', String(visible));
-      if (this.map.getLayer("wind-canvas-layer")) {
-          this.map.setLayoutProperty("wind-canvas-layer", "visibility", visible ? "visible" : "none");
-      }
-      if (visible) {
-          this.startWindAnimation();
-      } else {
-          if (this.windAnimFrame) {
-              cancelAnimationFrame(this.windAnimFrame);
-              this.windAnimFrame = null;
-          }
-          if (this.windCtx && this.windCanvas) {
-              this.windCtx.clearRect(0, 0, this.windCanvas.width, this.windCanvas.height);
-          }
-      }
-  }
+    localStorage.setItem('weather_wind_visible', String(visible));
+
+    if (this.map.getLayer("wind-canvas-layer")) {
+        this.map.setLayoutProperty("wind-canvas-layer", "visibility", visible ? "visible" : "none");
+    }
+
+    if (visible) {
+        this.startWindAnimation();
+    } else {
+        if (this.windAnimFrame) {
+            cancelAnimationFrame(this.windAnimFrame);
+            this.windAnimFrame = null;
+        }
+        // Clear canvas BEFORE nulling ctx, while refs are still valid
+        if (this.windCtx && this.windCanvas) {
+            this.windCtx.clearRect(0, 0, this.windCanvas.width, this.windCanvas.height);
+        }
+    }
+}
 
 
 
@@ -1364,14 +1383,37 @@ private speedToColor(speed: number): string {
       this.probeTooltip.style.left = `${e.originalEvent.pageX + 15}px`;
       this.probeTooltip.style.top = `${e.originalEvent.pageY + 15}px`;
 
+      let windHTML = '';
+      if (this.windField && this.windField.length > 0) {
+          let closest = this.windField[0];
+          let minDist = Infinity;
+          for (const w of this.windField) {
+              const dist = Math.pow(w.latitude - e.lngLat.lat, 2) + Math.pow(w.longitude - e.lngLat.lng, 2);
+              if (dist < minDist) {
+                  minDist = dist;
+                  closest = w;
+              }
+          }
+          if (minDist < 2) {
+              const rot = Math.round(closest.windDirection);
+              windHTML = `<div style="font-size: 11px; color: #ddd; margin-top: 2px; display: flex; align-items: center; gap: 4px;">
+                  <span>Wind: ${Math.round(closest.windSpeed)} km/h</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(${rot}deg);">
+                      <line x1="12" y1="4" x2="12" y2="20"></line>
+                      <polyline points="18 14 12 20 6 14"></polyline>
+                  </svg>
+              </div>`;
+          }
+      }
+
       // Get color
       const color = await this.getRadarValueAt(e.lngLat.lng, e.lngLat.lat);
-      if (color) {
-          this.probeTooltip.innerHTML = `<strong>${color}</strong>`;
+      if (color || windHTML) {
+          this.probeTooltip.innerHTML = `${color ? `<strong>${color}</strong>` : '<strong>No Rain</strong>'}${windHTML}`;
           this.probeTooltip.style.display = 'block';
       } else {
-          this.probeTooltip.innerText = "No Data";
-          this.probeTooltip.style.display = 'none'; // Or show 'No Rain'
+          this.probeTooltip.innerText = "No Rain";
+          this.probeTooltip.style.display = 'none';
       }
   }
 
@@ -1404,7 +1446,11 @@ private speedToColor(speed: number): string {
       const timestamp = this.currentRadarTimestamp;
       if (!timestamp) return null;
 
-      const url = `https://tilecache.rainviewer.com/v2/radar/${timestamp}/256/${SAMPLE_ZOOM}/${x}/${y}/${RainViewerService.colorScheme}/1_1.png`;
+      const templateUrl = RainViewerService.getTileUrl(timestamp, 256);
+      const url = templateUrl
+          .replace('{z}', SAMPLE_ZOOM.toString())
+          .replace('{x}', x.toString())
+          .replace('{y}', y.toString());
 
       // Check Cache
       let ctx = this.probeCache?.ctx;

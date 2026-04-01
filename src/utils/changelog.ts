@@ -8,6 +8,17 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: 'v1.10',
+    date: '2026-04-02',
+    changes: [
+      'Add Warning Description',
+      'Add Probe Tool Wind Data Display',
+      'Fix Playback Ui Issues',
+      'Fix Wind performance issue',
+      'Fix Probe Tool Data Display',
+    ]
+  },
+  {
     version: 'v1.9',
     date: '2026-04-01',
     changes: [
@@ -17,7 +28,7 @@ export const changelogData: ChangelogEntry[] = [
       'Fix Forecast Day counting issue',
       {
         text: 'Fix Some Mobile Ui Issues',
-        note: '(This update is not an April Fools joke, I promise!)'
+        note: 'This update is not an April Fools joke, I promise!'
       },
     ]
   },

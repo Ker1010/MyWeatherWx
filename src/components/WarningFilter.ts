@@ -43,6 +43,7 @@ export class WarningFilter {
         { id: 'alert', label: 'Alert' },
     ];
 
+
     constructor(
         onChange: (state: FilterState) => void, 
         onToggleRawView?: () => void,
@@ -153,7 +154,10 @@ export class WarningFilter {
                     </button>
                 </div>
                 <div class="filter-section">
-                    <h5>${t('categories')}</h5>
+                    <div class="d-flex align-items-center gap-1">
+                        <h5>${t('categories')}</h5>
+                        <button id="category-info-btn" class="category-heading-info-btn" aria-label="Category information">!</button>
+                    </div>
                     ${this.renderCategories()}
                 </div>
                 <hr>
@@ -356,8 +360,76 @@ export class WarningFilter {
                 this.render();
             });
         });
+
+        // Category Info Button (heading)
+        const catInfoBtn = this.container.querySelector('#category-info-btn');
+        catInfoBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.showCategoryInfoModal();
+        });
     }
 
+
+    private showCategoryInfoModal() {
+        // Remove existing
+        document.querySelectorAll('.category-info-modal-overlay').forEach(el => el.remove());
+
+        const t = (key: string) => this.languageService.translate(key);
+
+        const items: { color: string; icon: string; labelKey: string; descKey: string }[] = [
+            { color: '#FFEB3B', icon: 'bi-wind', labelKey: 'first_category',        descKey: 'desc_first' },
+            { color: '#FF9800', icon: 'bi-water', labelKey: 'second_category',       descKey: 'desc_second' },
+            { color: '#F44336', icon: 'bi-tsunami', labelKey: 'third_category',        descKey: 'desc_third' },
+            { color: '#2196F3', icon: 'bi-cloud-lightning-rain-fill', labelKey: 'thunderstorm_warning',  descKey: 'desc_thunderstorm_warning' },
+            { color: '#2196F3', icon: 'bi-cloud-lightning-fill', labelKey: 'thunderstorm_watch',    descKey: 'desc_thunderstorm_watch' },
+            { color: '#4CAF50', icon: 'bi-cloud-rain-heavy-fill', labelKey: 'continuous_rain',       descKey: 'desc_continuous_rain' },
+            { color: '#00BCD4', icon: 'bi-water', labelKey: 'sea_level_rise',        descKey: 'desc_sea_level' },
+            { color: '#9C27B0', icon: 'bi-hurricane', labelKey: 'tropical_cyclone',      descKey: 'desc_tropical_cyclone' },
+            { color: '#9C27B0', icon: 'bi-bell-fill', labelKey: 'alert',                 descKey: 'desc_alert' },
+        ];
+
+        const itemsHtml = items.map(item => `
+            <div class="info-card" style="--card-color: ${item.color};">
+                <div class="info-card-icon">
+                    <i class="bi ${item.icon}"></i>
+                </div>
+                <div class="info-card-content">
+                    <h4>${t(item.labelKey)}</h4>
+                    <p>${t(item.descKey)}</p>
+                </div>
+            </div>
+        `).join('');
+
+        const overlay = document.createElement('div');
+        overlay.className = 'category-info-modal-overlay';
+        overlay.innerHTML = `
+            <div class="category-info-modal distinct-modal">
+                <div class="cat-modal-header">
+                    <h3><i class="bi bi-info-square-fill" style="color: #2196f3; margin-right: 10px; font-size: 18px;"></i>${t('category_info_title')}</h3>
+                    <button class="close-btn cat-modal-close" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="cat-modal-grid">
+                    ${itemsHtml}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Animate in
+        requestAnimationFrame(() => overlay.classList.add('visible'));
+
+        const close = () => {
+            overlay.classList.remove('visible');
+            setTimeout(() => overlay.remove(), 250);
+        };
+
+        overlay.querySelector('.cat-modal-close')?.addEventListener('click', close);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) close();
+        });
+    }
 
     private showConfirmModal(message: string, onConfirm: () => void) {
         const modal = document.getElementById('confirm-modal');
@@ -402,7 +474,6 @@ export class WarningFilter {
     private renderCategories(): string {
         const t = (key: string) => this.languageService.translate(key);
         
-        // Define localized labels based on IDs
         const getLabel = (id: string, def: string) => {
             if (id === 'first') return t('first_category');
             if (id === 'second') return t('second_category');
@@ -418,9 +489,7 @@ export class WarningFilter {
 
         return WarningFilter.CATEGORIES.map(cat => {
             if (cat.subItems) {
-                // Render Group
                 const groupLabel = cat.label === 'Thunderstorm' ? t('thunderstorm') : cat.label;
-
                 const subItemsHtml = cat.subItems.map(sub => `
                     <label class="checkbox-container sub-item">
                         <input type="checkbox" value="${sub.id}" ${this.state.categories.has(sub.id) ? 'checked' : ''}>
@@ -428,7 +497,6 @@ export class WarningFilter {
                         ${getLabel(sub.id, sub.label)}
                     </label>
                 `).join('');
-
                 return `
                     <div class="category-group">
                         <span class="group-label">${groupLabel}</span>
@@ -436,7 +504,6 @@ export class WarningFilter {
                     </div>
                 `;
             } else {
-                // Render Single Item
                 return `
                     <label class="checkbox-container">
                         <input type="checkbox" value="${cat.id}" ${this.state.categories.has(cat.id!) ? 'checked' : ''}>

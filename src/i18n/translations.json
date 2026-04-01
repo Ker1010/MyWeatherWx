@@ -393,5 +393,55 @@
         "en": "Show Wind Arrows",
         "bm": "Paparkan Anak Panah Angin",
         "cn": "显示风向箭头"
+    },
+    "category_info_title": {
+        "en": "Filter Categories Guide",
+        "bm": "Panduan Kategori Penapis",
+        "cn": "筛选类别说明"
+    },
+    "desc_first": {
+        "en": "Strong wind of 40-50 kmph and rough sea with wave height up to 3.5 meters. Dangerous for small boats, recreational at sea, and sea sports.",
+        "bm": "Angin kencang 40-50 kmsj dan laut bergelora dengan ombak mencapai 3.5 meter. Berbahaya kepada bot-bot kecil, rekreasi dan sukan laut.",
+        "cn": "风速 40-50 公里/小时，海浪高达 3.5 米。对小船、海上休闲和水上运动有危险。"
+    },
+    "desc_second": {
+        "en": "Strong wind of 50-60 kmph and rough sea with wave height up to 4.5 meters. Dangerous for all shipping and coastal activities including fishing and ferry services.",
+        "bm": "Angin kencang 50-60 kmsj dan laut bergelora dengan ombak mencapai 4.5 meter. Berbahaya kepada semua aktiviti perkapalan dan pantai termasuk menangkap ikan dan perkhidmatan feri.",
+        "cn": "风速 50-60 公里/小时，海浪高达 4.5 米。对所有航运和沿海活动（包括捕鱼和渡轮服务）有危险。"
+    },
+    "desc_third": {
+        "en": "Strong wind exceeding 60 kmph and rough sea with wave height exceeding 4.5 meters. Dangerous for all shipping and coastal activities including workers on oil platforms.",
+        "bm": "Angin kencang melebihi 60 kmsj dan laut bergelora dengan ombak melebihi 4.5 meter. Berbahaya kepada semua aktiviti perkapalan dan pantai termasuk pekerja pangkalan minyak.",
+        "cn": "风速超过 60 公里/小时，海浪超过 4.5 米。对所有航运和沿海活动（包括石油平台工人）有极大的危险。"
+    },
+    "desc_thunderstorm_warning": {
+        "en": "Signs of a thunderstorm with rain intensity exceeding 20 mm/hour that is expected to last for more than an hour.",
+        "bm": "Tanda-tanda ribut petir dengan intensiti hujan melebihi 20 mm/jam yang dijangka berlanjutan lebih dari sejam.",
+        "cn": "预计有降雨强度超过 20 毫米/小时并持续一小时以上的雷暴迹象。"
+    },
+    "desc_thunderstorm_watch": {
+        "en": "Atmospheric conditions are favorable for thunderstorm development. Stay alert and monitor updates.",
+        "bm": "Keadaan atmosfera sesuai untuk pembangunan ribut petir. Kekal berwaspada dan pantau kemas kini.",
+        "cn": "大气条件有利于雷暴发展。请保持警觉并关注最新动态。"
+    },
+    "desc_continuous_rain": {
+        "en": "Prolonged rainfall expected in the area. Monitor weather updates as conditions may worsen.",
+        "bm": "Hujan berterusan dijangka berlaku di kawasan ini. Sila pantau perkembangan cuaca kerana keadaan mungkin bertambah buruk.",
+        "cn": "预计该地区将出现持续降雨。请关注天气更新，因为情况可能会恶化。"
+    },
+    "desc_sea_level": {
+        "en": "Abnormal coastal water level rise due to storm surge or swell. Risk of coastal flooding in low-lying areas.",
+        "bm": "Peningkatan paras air pesisir pantai yang luar biasa akibat ribut atau ombak besar. Risiko banjir pesisir di kawasan rendah.",
+        "cn": "由于风暴潮或涌浪导致海岸水位异常上升。低洼地区存在沿海洪水风险。"
+    },
+    "desc_tropical_cyclone": {
+        "en": "Tropical cyclone advisories and warnings issued within the area of latitudes 0 - 20 N and longitudes 95 E - 130 E.",
+        "bm": "Nasihat dan amaran siklon tropika dikeluarkan dalam kawasan latitud 0 - 20 U dan longitud 95 T - 130 T.",
+        "cn": "在北纬 0 - 20 度和东经 95 - 130 度区域内发布的热带气旋警报和警告。"
+    },
+    "desc_alert": {
+        "en": "General advisory warning for weather conditions that require attention. Check full details for the specific threat.",
+        "bm": "Amaran umum untuk keadaan cuaca yang memerlukan perhatian. Semak butiran penuh untuk ancaman tertentu.",
+        "cn": "需要关注的气象状况的一般预警通知。请查看完整详情以了解具体威胁。"
     }
 }
