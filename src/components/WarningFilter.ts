@@ -18,7 +18,8 @@ export class WarningFilter {
     private onChange: (state: FilterState) => void;
     private onToggleRawView?: () => void;
     private onForecastSelect?: (dayIndex: number | null) => void;
-
+    private onMapStyleChange?: (style: string) => void;
+    private onWindToggle?: (visible: boolean) => void;
 
     // Ordered categories for display
     private static CATEGORIES: { 
@@ -46,11 +47,15 @@ export class WarningFilter {
         onChange: (state: FilterState) => void, 
         onToggleRawView?: () => void,
         onForecastSelect?: (dayIndex: number | null) => void,
-        defaultActiveCategories?: string[]
+        defaultActiveCategories?: string[],
+        onMapStyleChange?: (style: string) => void,
+        onWindToggle?: (visible: boolean) => void
     ) {
         this.onChange = onChange;
         this.onToggleRawView = onToggleRawView;
         this.onForecastSelect = onForecastSelect;
+        this.onMapStyleChange = onMapStyleChange;
+        this.onWindToggle = onWindToggle;
         this.languageService = LanguageService.getInstance();
         
         // Initialize with provided defaults or all IDs
@@ -85,8 +90,17 @@ export class WarningFilter {
         
         document.body.appendChild(this.container);
         
-        // Apply saved playback setting on init
+        // Apply saved settings on init
         this.applyPlaybackSetting();
+        
+        setTimeout(() => {
+            if (this.onMapStyleChange) {
+                this.onMapStyleChange(this.getMapStyleSetting());
+            }
+            if (this.onWindToggle) {
+                this.onWindToggle(this.getWindSetting());
+            }
+        }, 100);
 
         // Subscribe to language changes
         this.languageService.subscribe(() => {
@@ -142,6 +156,14 @@ export class WarningFilter {
                     <h5>${t('categories')}</h5>
                     ${this.renderCategories()}
                 </div>
+                <hr>
+                <div class="filter-section">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="wind-direction-toggle" ${this.getWindSetting() ? 'checked' : ''}>
+                        <span class="checkmark"></span>
+                        ${t('show_wind_arrows')}
+                    </label>
+                </div>
             </div>
 
             <div class="filter-content tab-content ${this.activeTab === 'forecast' ? 'active' : ''}" data-tab="forecast">
@@ -156,7 +178,23 @@ export class WarningFilter {
 
 
             <div class="filter-content tab-content ${this.activeTab === 'settings' ? 'active' : ''}" data-tab="settings">
-
+                <div class="filter-section">
+                    <h5>${t('map_style')}</h5>
+                    <div class="d-flex gap-1">
+                        <div class="map-style-card ${this.getMapStyleSetting() === 'dark' ? 'active' : ''}" data-style="dark">
+                            <div class="map-preview-img" style="background-image: url('/assets/map-preview-dark.png');"></div>
+                            <div class="map-style-title">${t('vector_dark')}</div>
+                        </div>
+                        <div class="map-style-card ${this.getMapStyleSetting() === 'esri_dark' ? 'active' : ''}" data-style="esri_dark">
+                            <div class="map-preview-img" style="background-image: url('/assets/map-preview-esri.png');"></div>
+                            <div class="map-style-title">${t('simple_dark')}</div>
+                        </div>
+                        <div class="map-style-card ${this.getMapStyleSetting() === 'satellite' ? 'active' : ''}" data-style="satellite">
+                            <div class="map-preview-img" style="background-image: url('/assets/map-preview-satellite.png');"></div>
+                            <div class="map-style-title">${t('satellite')}</div>
+                        </div>
+                    </div>
+                </div>
                 <div class="filter-section">
                     <h5>${t('language')}</h5>
                     <div class="language-toggle">
@@ -196,6 +234,15 @@ export class WarningFilter {
     private getPlaybackSetting(): boolean {
         const saved = localStorage.getItem('playback_ui_enabled');
         return saved !== 'false';
+    }
+
+    private getMapStyleSetting(): string {
+        return localStorage.getItem('map_style') || 'dark';
+    }
+
+    private getWindSetting(): boolean {
+        const saved = localStorage.getItem('show_wind_arrows');
+        return saved === 'true';
     }
 
     private attachEventListeners() {
@@ -239,12 +286,23 @@ export class WarningFilter {
         });
 
         // Settings Toggles
-        const playbackToggle = this.container.querySelector('#playback-ui-toggle');
+        const playbackToggle = this.container.querySelector('#playback-ui-toggle') as HTMLInputElement;
         playbackToggle?.addEventListener('change', (e) => {
             const checked = (e.target as HTMLInputElement).checked;
-            localStorage.setItem('playback_ui_enabled', checked.toString());
-            this.applyPlaybackSetting();
-            this.applyPlaybackSetting();
+            localStorage.setItem('playback_ui_visible', checked.toString());
+            const playbackControls = document.querySelector('.playback-controls');
+            if (playbackControls) {
+                playbackControls.classList.toggle('hidden', !checked);
+            }
+        });
+
+        const windToggle = this.container.querySelector('#wind-direction-toggle') as HTMLInputElement;
+        windToggle?.addEventListener('change', (e) => {
+            const checked = (e.target as HTMLInputElement).checked;
+            localStorage.setItem('show_wind_arrows', checked.toString());
+            if (this.onWindToggle) {
+                this.onWindToggle(checked);
+            }
         });
 
         // Clear Data
@@ -257,6 +315,23 @@ export class WarningFilter {
                     location.reload();
                 }
             );
+        });
+
+        // Map Style Card Selection
+        this.container.querySelectorAll('.map-style-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const target = e.currentTarget as HTMLElement;
+                const style = target.dataset.style || 'dark';
+                
+                // Update local storage
+                localStorage.setItem('map_style', style);
+                
+                // Update map
+                if (this.onMapStyleChange) this.onMapStyleChange(style);
+                
+                // Update UI state
+                this.render();
+            });
         });
 
         // Panel Toggle
@@ -402,7 +477,7 @@ export class WarningFilter {
             
             html += `
                 <button class="forecast-day-btn btn ${isSelected ? 'btn-primary' : 'btn-ghost'}" data-index="${i}" style="text-align: left; padding: 10px; justify-content: flex-start;">
-                    <div style="font-weight: bold;">${dayName} - Day ${i + 1}</div>
+                    <div style="font-weight: bold;">${dayName} - Day ${i}</div>
                     <div style="font-size: 0.8em; opacity: 0.8;">${dateStr}</div>
                 </button>
             `;

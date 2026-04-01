@@ -9,6 +9,14 @@ import { RainViewerService } from "../services/RainViewerService";
 import { LanguageService } from "../services/LanguageService";
 import type { Language } from "../services/LanguageService";
 
+interface Particle {
+    lng: number;  // was x
+    lat: number;  // was y
+    age: number;
+    maxAge: number;
+    speed: number;
+}
+
 export class MapComponent {
   private userLocationMarker?: maplibregl.Marker;
   private map: MapLibreMap;
@@ -18,6 +26,14 @@ export class MapComponent {
   private allWarnings: DecodedWarning[] = [];
   private lightningService: LightningService;
   private currentLanguage: Language = 'en';
+
+  private windCanvas: HTMLCanvasElement | null = null;
+  private windCtx: CanvasRenderingContext2D | null = null;
+  private windAnimFrame: number | null = null;
+  private windField: any[] = [];
+  private particles: Particle[] = [];
+  private readonly PARTICLE_COUNT = 1000;
+  private isMapMoving = false;
   
   // Drawing State
   private isDrawingMode = false;
@@ -60,12 +76,36 @@ export class MapComponent {
         type: "geojson",
         data: "/malaysia_detail.geojson",
       },
+      "esri-dark-base-source": {
+        type: "raster",
+        tiles: ["https://basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png"],
+        tileSize: 256,
+        attribution: '&copy; OpenStreetMap &copy; CARTO'
+      },
+      "satellite-source": {
+        type: "raster",
+        tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+        tileSize: 256,
+        attribution: 'Tiles &copy; Esri'
+      },
     },
     layers: [
       {
         id: "background",
         type: "background",
         paint: { "background-color": "#1f2025" },
+      },
+      {
+        id: "esri-dark-base",
+        type: "raster",
+        source: "esri-dark-base-source",
+        layout: { visibility: "none" }
+      },
+      {
+        id: "satellite-layer",
+        type: "raster",
+        source: "satellite-source",
+        layout: { visibility: "none" }
       },
       {
         id: "world-fill",
@@ -207,6 +247,8 @@ export class MapComponent {
 
       // 2. Start the visual fading animation loop
       this.startLightningAnimation();
+
+      this.initializeWindLayer();
 
       callback();
     });
@@ -404,6 +446,248 @@ export class MapComponent {
     this.map.on("mouseleave", "warnings-fill", () => {
       this.map.getCanvas().style.cursor = "";
     });
+  }
+
+  private initializeWindLayer() {
+    if (this.map.getSource("wind-source")) return;
+
+    const arrowSvg = `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L19 21L12 17L5 21L12 2Z" fill="#FFF" stroke="#000" stroke-width="1" />
+      </svg>
+    `;
+
+    const img = new Image(24, 24);
+    img.onload = () => {
+        this.map.addImage('wind-arrow', img);
+
+        this.map.addSource("wind-source", {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: [] },
+        });
+    };
+    img.src = 'data:image/svg+xml;base64,' + btoa(arrowSvg);
+}
+
+  public updateWindData(data: any[]) {
+      this.windField = data;
+      this.initWindCanvas();
+      this.spawnParticles();
+      
+      const windEnabled = localStorage.getItem('weather_wind_visible') !== 'false';
+      if (windEnabled) {
+          this.startWindAnimation();
+      } else {
+          this.toggleWindLayer(false);
+      }
+  }
+
+private initWindCanvas() {
+    if (this.windCanvas) return;
+
+    const container = this.map.getCanvas().parentElement!;
+    this.windCanvas = document.createElement("canvas");
+    this.windCanvas.style.cssText = `
+        position: absolute; top: 0; left: 0;
+        pointer-events: none; z-index: 0;
+    `;
+    this.resizeWindCanvas();
+    container.appendChild(this.windCanvas);
+    this.windCtx = this.windCanvas.getContext("2d");
+
+    this.map.on("resize", () => {
+        this.resizeWindCanvas();
+        this.spawnParticles();
+    });
+
+    // NEW EVENT HANDLING FOR SMOOTH PANNING
+    this.map.on("movestart", () => {
+        this.isMapMoving = true;
+    });
+
+    this.map.on("move", () => {
+        // Clear the canvas immediately so trails don't smear across the screen
+        if (this.windCtx && this.windCanvas) {
+            this.windCtx.clearRect(0, 0, this.windCanvas.width, this.windCanvas.height);
+        }
+    });
+
+    this.map.on("moveend", () => {
+        this.isMapMoving = false;
+        this.spawnParticles(); // Re-seed particles at the new geographic locations
+    });
+}
+
+private resizeWindCanvas() {
+    if (!this.windCanvas) return;
+    const c = this.map.getCanvas();
+    this.windCanvas.width  = c.width;
+    this.windCanvas.height = c.height;
+}
+
+private spawnParticles() {
+    const w = this.windCanvas!.width;
+    const h = this.windCanvas!.height;
+    this.particles = Array.from({ length: this.PARTICLE_COUNT }, () =>
+        this.newParticle(w, h)
+    );
+}
+
+private newParticle(w: number, h: number): Particle {
+    const ll = this.map.unproject([Math.random() * w, Math.random() * h]);
+    return {
+        lng: ll.lng,
+        lat: ll.lat,
+        age: Math.random() * 20,
+        // Lowered maxAge so the particles die out faster
+        maxAge: 30 + Math.random() * 30, 
+        speed: 0,
+    };
+}
+
+
+private interpolateWind(x: number, y: number): { u: number; v: number; speed: number } | null {
+    // Convert screen px → lng/lat
+    const lngLat = this.map.unproject([x, y]);
+
+    if (!this.windField.length) return null;
+
+    // 1. FAST CULLING: Check if the particle is inside your WindService bounds
+    // We add a 0.5 degree margin so particles don't cut off harshly at the exact borders
+    const margin = 0.5; 
+    const inPM = (lngLat.lat >= 1.2 - margin && lngLat.lat <= 7.3 + margin && lngLat.lng >= 99.6 - margin && lngLat.lng <= 104.5 + margin);
+    const inEM = (lngLat.lat >= 0.8 - margin && lngLat.lat <= 7.8 + margin && lngLat.lng >= 109.5 - margin && lngLat.lng <= 119.3 + margin);
+
+    // If outside Peninsular AND outside East Malaysia, kill the particle
+    if (!inPM && !inEM) {
+        return null; 
+    }
+
+    // Find nearest neighbours by distance
+    let nearest = this.windField
+        .map(d => {
+            const dx = d.longitude - lngLat.lng;
+            const dy = d.latitude  - lngLat.lat;
+            return { d: dx * dx + dy * dy, data: d };
+        })
+        .sort((a, b) => a.d - b.d)
+        .slice(0, 4);
+
+    // 2. DISTANCE CUTOFF: If even the nearest point is too far away 
+    // (e.g., a particle over the ocean *between* PM and EM), kill it.
+    // 2.0 squared degrees is roughly ~150km away
+    if (nearest[0].d > 2.0) { 
+        return null;
+    }
+
+    // IDW (inverse distance weighting)
+    let sumW = 0, sumU = 0, sumV = 0;
+    for (const n of nearest) {
+        const w = n.d < 1e-10 ? 1e10 : 1 / n.d;
+        
+        // (Includes the 180 degree fix from earlier!)
+        const rad = ((n.data.windDirection + 180) * Math.PI) / 180; 
+        
+        sumU += Math.sin(rad) * n.data.windSpeed * w;
+        sumV += Math.cos(rad) * n.data.windSpeed * w;   // north-up: cos for v
+        sumW += w;
+    }
+
+    const u = sumU / sumW;
+    const v = sumV / sumW;
+    return { u, v, speed: Math.sqrt(u * u + v * v) };
+}
+
+private speedToColor(speed: number): string {
+    const t = Math.min(speed / 20, 1);
+    // Lowered the base alpha values so overlapping lines build up a "glow"
+    if (t < 0.33)  return `rgba(100, 180, 255, 0.4)`;
+    else return `rgba(100, 255, 160, 0.5)`;
+}
+
+  private startWindAnimation() {
+      if (this.windAnimFrame) cancelAnimationFrame(this.windAnimFrame);
+      const ctx = this.windCtx!;
+      const canvas = this.windCanvas!;
+
+      const step = () => {
+          if (!this.isMapMoving) {
+              const w = canvas.width;
+              const h = canvas.height;
+
+              // NEW CODE
+              // "destination-out" strictly subtracts alpha every frame, guaranteeing it hits 0
+              // Slower fade for longer, smoother tails
+              ctx.globalCompositeOperation = "destination-out";
+              // Lowered from 0.1 to 0.04. This means it takes longer for the trail to disappear.
+              ctx.fillStyle = "rgba(0, 0, 0, 0.15)"; 
+              ctx.fillRect(0, 0, w, h);
+              ctx.globalCompositeOperation = "source-over";
+
+              for (const p of this.particles) {
+                  // Project geo → screen
+                  const screen = this.map.project([p.lng, p.lat]);
+
+                  // Respawn if off-screen
+                  if (screen.x < 0 || screen.x > w || screen.y < 0 || screen.y > h) {
+                      Object.assign(p, this.newParticle(w, h));
+                      continue;
+                  }
+
+                  const wind = this.interpolateWind(screen.x, screen.y);
+                  if (!wind) {
+                      Object.assign(p, this.newParticle(w, h));
+                      continue;
+                  }
+
+                  // Get the current zoom level of the map
+                  const currentZoom = this.map.getZoom();
+
+                  // Calculate a dynamic zoom factor. 
+                  // Note: Change '6' to whatever zoom level you were looking at when 
+                  // the speed originally looked perfect to you.
+                  const zoomFactor = Math.pow(2, currentZoom - 6); 
+
+                  // Scale the speed dynamically. As you zoom out (lower zoom number), 
+                  // zoomFactor gets smaller, automatically slowing down the pixel movement.
+                  const scale = 0.12 * zoomFactor;
+
+                  const nx = screen.x + wind.u * scale;
+                  const ny = screen.y - wind.v * scale;
+
+                  // Draw trail
+                  ctx.beginPath();
+                  ctx.moveTo(screen.x, screen.y);
+                  ctx.lineTo(nx, ny);
+                  const color = this.speedToColor(wind.speed);
+                  ctx.strokeStyle = color;
+                  ctx.lineCap = "round";
+                  ctx.lineWidth = wind.speed > 15 ? 1.5 : 0.8;
+                  ctx.shadowBlur = 4;
+                  ctx.stroke();
+
+                  // Unproject moved screen pos back to geo
+                  const moved = this.map.unproject([nx, ny]);
+                  p.lng = moved.lng;
+                  p.lat = moved.lat;
+                  p.speed = wind.speed;
+                  p.age++;
+
+                  if (p.age > p.maxAge) {
+                      Object.assign(p, this.newParticle(w, h));
+                  }
+              }
+          }
+          this.windAnimFrame = requestAnimationFrame(step);
+      };
+
+      this.windAnimFrame = requestAnimationFrame(step);
+  }
+
+  public destroyWindLayer() {
+      if (this.windAnimFrame) cancelAnimationFrame(this.windAnimFrame);
+      this.windCanvas?.remove();
+      this.windCanvas = null;
   }
 
   private formatTime(dateStr: string): string {
@@ -605,6 +889,63 @@ export class MapComponent {
       this.updateRainViewerLayer(this.currentDisplayTime / 1000);
   }
 
+  public toggleMapStyle(style: string) {
+    const isDarkVector = style === 'dark';
+    const isEsriDark = style === 'esri_dark';
+    
+    // Singular raster layers (one source = one layer)
+    const rasterLayers: Record<string, string> = {
+        'satellite': 'satellite-layer'
+    };
+
+    // Toggle singular raster layers
+    Object.keys(rasterLayers).forEach(key => {
+        const layerId = rasterLayers[key];
+        if (this.map.getLayer(layerId)) {
+            this.map.setLayoutProperty(layerId, 'visibility', style === key ? 'visible' : 'none');
+        }
+    });
+    
+    // Toggle Esri Dark composite layers
+    if (this.map.getLayer('esri-dark-base')) {
+        this.map.setLayoutProperty('esri-dark-base', 'visibility', isEsriDark ? 'visible' : 'none');
+    }
+
+    // Fill/background layers: only show on the dark vector map
+    const fillLayers = ['world-fill', 'malaysia-fill'];
+    fillLayers.forEach(layerId => {
+        if (this.map.getLayer(layerId)) {
+            this.map.setLayoutProperty(layerId, 'visibility', isDarkVector ? 'visible' : 'none');
+        }
+    });
+
+    // Malaysia border + label overlays: ALWAYS show on every map style
+    // (they sit on top of any raster base map)
+    const overlayLayers = ['malaysia-outline', 'malaysia-outline-detailed', 'malaysia-labels-detailed'];
+    overlayLayers.forEach(layerId => {
+        if (this.map.getLayer(layerId)) {
+            this.map.setLayoutProperty(layerId, 'visibility', 'visible');
+        }
+    });
+  }
+
+  public toggleWindLayer(visible: boolean) {
+      localStorage.setItem('weather_wind_visible', String(visible));
+      if (this.map.getLayer("wind-canvas-layer")) {
+          this.map.setLayoutProperty("wind-canvas-layer", "visibility", visible ? "visible" : "none");
+      }
+      if (visible) {
+          this.startWindAnimation();
+      } else {
+          if (this.windAnimFrame) {
+              cancelAnimationFrame(this.windAnimFrame);
+              this.windAnimFrame = null;
+          }
+          if (this.windCtx && this.windCanvas) {
+              this.windCtx.clearRect(0, 0, this.windCanvas.width, this.windCanvas.height);
+          }
+      }
+  }
 
 
 

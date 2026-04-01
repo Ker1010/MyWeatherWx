@@ -706,7 +706,6 @@ body {
   .warning-filter.collapsed {
       width: auto;
       align-items: center;
-      gap: 10px;
       max-height: 60px; /* Exact height for collapsed state */
       max-width: none;
       padding-bottom: max(10px, env(safe-area-inset-bottom));
@@ -1343,4 +1342,68 @@ a, button, input[type="range"]::-webkit-slider-thumb,
 .btn-ghost:hover {
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
+}
+/* Map Style Selection Grid */
+.map-style-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.map-style-card {
+    width: 100%;
+    background: rgba(255,255,255,0.02);
+    border-radius: 12px;
+    border: 1px solid #2c2c2e;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    overflow: hidden;
+    cursor: pointer;
+
+    display: flex;
+    flex-direction: column;
+
+    transition: border-color 0.15s ease;
+}
+
+.map-style-card:hover {
+    border-color: #3a3a3c;
+}
+
+.map-style-card.active {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.35);
+}
+
+.map-preview-img {
+    width: 100%;
+    aspect-ratio: 9 / 10;
+    background-size: cover;
+    background-position: center;
+}
+
+.map-style-title {
+    padding: 2px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    color: #d1d1d6;
+}
+
+.map-style-card.active .map-style-title {
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .map-style-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .map-style-grid {
+        grid-template-columns: 1fr;
+    }
 }

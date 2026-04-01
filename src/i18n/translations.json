@@ -363,5 +363,35 @@
         "en": "Cloudy",
         "bm": "Mendung",
         "cn": "多云"
+    },
+    "map_style": {
+        "en": "Map Style",
+        "bm": "Gaya Peta",
+        "cn": "地图样式"
+    },
+    "vector_dark": {
+        "en": "Vector Dark",
+        "bm": "Vektor Gelap",
+        "cn": "矢量深色"
+    },
+    "simple_dark": {
+        "en": "Simple Dark",
+        "bm": "Gelap Mudah",
+        "cn": "极简深色"
+    },
+    "satellite": {
+        "en": "Satellite",
+        "bm": "Satelit",
+        "cn": "卫星图像"
+    },
+    "wind_direction": {
+        "en": "Wind Direction",
+        "bm": "Arah Angin",
+        "cn": "风向"
+    },
+    "show_wind_arrows": {
+        "en": "Show Wind Arrows",
+        "bm": "Paparkan Anak Panah Angin",
+        "cn": "显示风向箭头"
     }
 }

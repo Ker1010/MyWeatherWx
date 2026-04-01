@@ -8,6 +8,20 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: 'v1.9',
+    date: '2026-04-01',
+    changes: [
+      'Add Map Style',
+      'Add Wind Layer (thanks to Open-Meteo API) 🎉',
+      'More area coverage',
+      'Fix Forecast Day counting issue',
+      {
+        text: 'Fix Some Mobile Ui Issues',
+        note: '(This update is not an April Fools joke, I promise!)'
+      },
+    ]
+  },
+  {
     version: 'v1.8',
     date: '2026-03-31',
     changes: [

@@ -5,6 +5,7 @@ import { RawWarningViewer } from './components/RawWarningViewer';
 import { RainViewerService } from './services/RainViewerService';
 import { WeatherWarningService, WeatherWarningDecoder } from './services/WeatherWarning';
 import { ForecastService } from './services/ForecastService';
+import { WindService } from './services/WindService';
 
 import { changelogData } from './utils/changelog';
 import { LanguageService } from './services/LanguageService';
@@ -452,8 +453,30 @@ mapComponent.onLoad(async () => {
             rawWarningViewer.show(currentWarnings);
         },
         handleForecastSelection, // Pass the forecast selection callback
-        DEFAULT_ACTIVE_WARNINGS
+        DEFAULT_ACTIVE_WARNINGS,
+        (style) => {
+            mapComponent.toggleMapStyle(style);
+        },
+        (visible) => {            
+            mapComponent.toggleWindLayer(visible);
+        }
     );
+
+    // wind direction
+    const fetchWind = async () => {
+        try {
+            const windData = await WindService.fetchWindData();
+            if (windData) {
+                mapComponent.updateWindData(windData);
+            }
+        } catch (err) {
+            console.error("Wind fetch failed:", err);
+        }
+    };
+
+    await fetchWind();
+    setInterval(fetchWind, 30 * 60 * 1000); // Poll every 30 minutes
+
 
     // Initialize RainViewer Color Scheme
     const savedScheme = localStorage.getItem('rainviewer_color_scheme');
