@@ -293,11 +293,8 @@ export class WarningFilter {
         const playbackToggle = this.container.querySelector('#playback-ui-toggle') as HTMLInputElement;
         playbackToggle?.addEventListener('change', (e) => {
             const checked = (e.target as HTMLInputElement).checked;
-            localStorage.setItem('playback_ui_visible', checked.toString());
-            const playbackControls = document.querySelector('.playback-controls');
-            if (playbackControls) {
-                playbackControls.classList.toggle('hidden', !checked);
-            }
+            localStorage.setItem('playback_ui_enabled', checked.toString());
+            this.applyPlaybackSetting();
         });
 
         const windToggle = this.container.querySelector('#wind-direction-toggle') as HTMLInputElement;
